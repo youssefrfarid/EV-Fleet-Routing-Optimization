@@ -63,10 +63,21 @@ class VehicleSolution:
         arrival_times: Dict mapping node → arrival time in minutes {'A': 0, 'B': 68}
         departure_times: Dict mapping node → departure time in minutes
         soc_at_nodes: Dict mapping node → SOC on arrival (0-1 fraction)
+        charging_start_times: Dict mapping station → time when charging actually starts
+                             (allows modeling queue waiting at stations)
+        
+    Queue Behavior at Charging Stations:
+        - arrival_time[station]: When vehicle arrives and joins queue
+        - charging_start_time[station]: When vehicle gets a plug and starts charging
+        - departure_time[station]: When charging completes and vehicle leaves
+        
+        Queue wait time = charging_start_time - arrival_time
+        Actual charging time = departure_time - charging_start_time
+        Total time at station = departure_time - arrival_time
         
     Note:
-        At charging stations, departure_time > arrival_time (charging takes time)
-        At non-charging nodes, departure_time ≈ arrival_time (no delay)
+        If charging_start_times not provided, assumes charging starts immediately
+        upon arrival (backward compatibility).
     """
     vehicle_id: int  # Unique identifier for this vehicle
     route: List[str]  # Sequence of nodes: e.g., ['A', 'J', 'S1', 'S2', 'M', 'B']
@@ -75,6 +86,7 @@ class VehicleSolution:
     arrival_times: Dict[str, float]  # Arrival time at each node (minutes from start)
     departure_times: Dict[str, float]  # Departure time from each node (minutes from start)
     soc_at_nodes: Dict[str, float]  # SOC at each node arrival (fraction [0,1])
+    charging_start_times: Dict[str, float] = None  # Optional: when charging actually starts (after queue wait)
     
     def get_completion_time(self) -> float:
         """
@@ -113,24 +125,66 @@ class VehicleSolution:
     
     def get_total_charging_time(self) -> float:
         """
-        Calculate total time this vehicle spent charging.
+        Calculate total time this vehicle spent ACTUALLY CHARGING (plugged in).
         
-        Sums (departure_time - arrival_time) for all charging stations.
-        This is the time vehicle was plugged in, not traveling.
+        If charging_start_times provided: uses (departure - charging_start) 
+        Otherwise: uses (departure - arrival) for backward compatibility
         
         Returns:
-            Total charging time in minutes
+            Total actual charging time in minutes (excludes queue waiting)
             
-        Example:
-            At S1: arrives 27 min, departs 42 min → 15 min charging
-            At S2: arrives 35 min, departs 48 min → 13 min charging
-            Total charging time = 28 min
+        Example with queue:
+            At S1: arrives 27, starts charging 30, departs 42 
+            → Queue wait: 3 min, Charging: 12 min
+            This method returns: 12 min (actual charging only)
         """
         total_time = 0.0
-        # Sum charging time at each station
+        for node in self.charging_stations:
+            if node in self.departure_times:
+                if self.charging_start_times and node in self.charging_start_times:
+                    # Use actual charging start time (excludes queue wait)
+                    start_time = self.charging_start_times[node]
+                else:
+                    # Backward compatibility: assume charging starts at arrival
+                    start_time = self.arrival_times.get(node, 0.0)
+                
+                charging_time = self.departure_times[node] - start_time
+                total_time += charging_time
+        return total_time
+    
+    def get_total_queue_time(self) -> float:
+        """
+        Calculate total time this vehicle spent waiting in queue at stations.
+        
+        Returns:
+            Total queue waiting time in minutes
+            Returns 0 if no charging_start_times provided (no queue modeled)
+            
+        Example:
+            At S1: arrives 27, starts charging 30 → Queue wait: 3 min
+            At S2: arrives 50, starts charging 50 → Queue wait: 0 min
+            Total queue time = 3 min
+        """
+        if not self.charging_start_times:
+            return 0.0
+        
+        total_wait = 0.0
+        for node in self.charging_stations:
+            if node in self.charging_start_times and node in self.arrival_times:
+                wait_time = self.charging_start_times[node] - self.arrival_times[node]
+                total_wait += max(0.0, wait_time)  # Ensure non-negative
+        return total_wait
+    
+    def get_total_time_at_stations(self) -> float:
+        """
+        Calculate total time spent at charging stations (queue + charging).
+        
+        Returns:
+            Total time at stations in minutes
+        """
+        total_time = 0.0
         for node in self.charging_stations:
             if node in self.arrival_times and node in self.departure_times:
-                # Charging time = departure - arrival
                 total_time += self.departure_times[node] - self.arrival_times[node]
         return total_time
 
@@ -149,28 +203,235 @@ class FleetSolution:
     vehicle_solutions: List[VehicleSolution]  # Solution for each vehicle
     params: SingleForkParams  # Problem parameters
     
-    def is_feasible(self) -> bool:
+    def is_feasible(self, verbose: bool = False) -> bool:
         """
-        Check if solution is feasible.
+        Comprehensive feasibility check with all constraints.
         
-        A solution is feasible if:
-        1. All vehicles reach destination 'B'
-        2. All SOC values are valid (between 0 and 1)
+        Checks:
+        1. Route feasibility (starts at A, ends at B, valid edges)
+        2. SOC bounds (0 ≤ SOC ≤ 1)
+        3. Energy balance (consistent SOC trajectory)
+        4. Time consistency (departure ≥ arrival)
+        5. Charging limits (no overcharging)
+        6. Station capacity constraints
+        7. Non-negativity (charging amounts, times)
         
+        Args:
+            verbose: If True, print detailed error messages
+            
         Returns:
             True if solution is feasible, False otherwise
-            
-        Note:
-            This does NOT check capacity constraints or timing conflicts.
-            Those should be checked separately if needed.
         """
-        for vs in self.vehicle_solutions:
-            # Check if route ends at 'B'
-            if vs.route[-1] != 'B':
+        # Check each vehicle individually
+        for i, vs in enumerate(self.vehicle_solutions):
+            # 1. Route feasibility
+            if not self._check_route_feasibility(vs, verbose, i):
                 return False
-            # Check if all SOC values are valid
-            if not all(0.0 <= soc <= 1.0 for soc in vs.soc_at_nodes.values()):
+            
+            # 2. SOC bounds
+            if not self._check_soc_bounds(vs, verbose, i):
                 return False
+            
+            # 3. Energy balance
+            if not self._check_energy_balance(vs, verbose, i):
+                return False
+            
+            # 4. Time consistency
+            if not self._check_time_consistency(vs, verbose, i):
+                return False
+            
+            # 5. Charging limits
+            if not self._check_charging_limits(vs, verbose, i):
+                return False
+            
+            # 6. Non-negativity
+            if not self._check_non_negativity(vs, verbose, i):
+                return False
+        
+        # 7. Station capacity constraints (fleet-wide)
+        if not self._check_station_capacity(verbose):
+            return False
+        
+        return True
+    
+    def _check_route_feasibility(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if route is valid (starts at A, ends at B, connected edges)."""
+        # Must start at A
+        if not vs.route or vs.route[0] != 'A':
+            if verbose:
+                print(f"❌ Vehicle {vehicle_idx}: Route must start at 'A', got {vs.route[0] if vs.route else 'empty'}")
+            return False
+        
+        # Must end at B
+        if vs.route[-1] != 'B':
+            if verbose:
+                print(f"❌ Vehicle {vehicle_idx}: Route must end at 'B', got {vs.route[-1]}")
+            return False
+        
+        # Check consecutive nodes are connected
+        for i in range(len(vs.route) - 1):
+            edge = (vs.route[i], vs.route[i+1])
+            if edge not in self.params.edges_time_min:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Invalid edge {edge} in route")
+                return False
+        
+        return True
+    
+    def _check_soc_bounds(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if all SOC values are in valid range [0, 1]."""
+        for node, soc in vs.soc_at_nodes.items():
+            if soc < 0.0 or soc > 1.0:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: SOC at node '{node}' = {soc:.3f} (must be in [0, 1])")
+                return False
+        return True
+    
+    def _check_energy_balance(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if SOC changes are consistent with energy consumed and charged."""
+        battery_kwh = self.params.battery_kwh[vs.vehicle_id]
+        tolerance = 1e-4  # Allow small numerical errors
+        
+        for i in range(len(vs.route) - 1):
+            current_node = vs.route[i]
+            next_node = vs.route[i + 1]
+            
+            # Get current SOC
+            soc_current = vs.soc_at_nodes.get(current_node, 0.0)
+            
+            # Add charging if current node is a charging station
+            if current_node in vs.charging_stations:
+                charged_kwh = vs.charging_amounts.get(current_node, 0.0)
+                soc_after_charge = soc_current + (charged_kwh / battery_kwh)
+            else:
+                soc_after_charge = soc_current
+            
+            # Subtract energy consumed on edge
+            edge = (current_node, next_node)
+            energy_consumed = self.params.edges_energy_kwh[edge]
+            soc_expected = soc_after_charge - (energy_consumed / battery_kwh)
+            
+            # Check consistency
+            soc_actual = vs.soc_at_nodes.get(next_node, 0.0)
+            if abs(soc_expected - soc_actual) > tolerance:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Energy balance violated at edge {edge}")
+                    print(f"   Expected SOC at {next_node}: {soc_expected:.4f}, Actual: {soc_actual:.4f}")
+                return False
+        
+        return True
+    
+    def _check_time_consistency(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if departure time >= arrival time at all nodes."""
+        for node in vs.route:
+            arrival = vs.arrival_times.get(node, 0.0)
+            departure = vs.departure_times.get(node, 0.0)
+            
+            if departure < arrival - 1e-6:  # Small tolerance for floating point
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Time inconsistency at node '{node}'")
+                    print(f"   Arrival: {arrival:.2f}, Departure: {departure:.2f}")
+                return False
+        
+        return True
+    
+    def _check_charging_limits(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if charging doesn't exceed battery capacity."""
+        battery_kwh = self.params.battery_kwh[vs.vehicle_id]
+        tolerance = 1e-4
+        
+        for station in vs.charging_stations:
+            soc_before = vs.soc_at_nodes.get(station, 0.0)
+            energy_charged = vs.charging_amounts.get(station, 0.0)
+            soc_after = soc_before + (energy_charged / battery_kwh)
+            
+            if soc_after > 1.0 + tolerance:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Overcharging at station '{station}'")
+                    print(f"   SOC before: {soc_before:.3f}, Charged: {energy_charged:.2f} kWh")
+                    print(f"   SOC after: {soc_after:.3f} (exceeds 100%)")
+                return False
+        
+        return True
+    
+    def _check_non_negativity(self, vs: VehicleSolution, verbose: bool, vehicle_idx: int) -> bool:
+        """Check if charging amounts and times are non-negative."""
+        # Check charging amounts
+        for station, amount in vs.charging_amounts.items():
+            if amount < 0:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Negative charging at '{station}': {amount} kWh")
+                return False
+        
+        # Check times
+        for node, time in vs.arrival_times.items():
+            if time < 0:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Negative arrival time at '{node}': {time}")
+                return False
+        
+        for node, time in vs.departure_times.items():
+            if time < 0:
+                if verbose:
+                    print(f"❌ Vehicle {vehicle_idx}: Negative departure time at '{node}': {time}")
+                return False
+        
+        return True
+    
+    def _check_station_capacity(self, verbose: bool) -> bool:
+        """
+        Check if station capacity constraints are satisfied.
+        
+        Capacity is based on CONCURRENT CHARGING, not just presence at station.
+        If charging_start_times provided, uses those to determine when vehicles
+        actually occupy a plug. Otherwise, assumes charging starts at arrival.
+        """
+        all_stations = set(self.params.upper_stations + self.params.lower_stations)
+        
+        for station in all_stations:
+            # Collect all CHARGING events at this station (when plug is actually used)
+            events = []
+            for vs in self.vehicle_solutions:
+                if station in vs.charging_stations:
+                    # Determine when charging actually starts
+                    if vs.charging_start_times and station in vs.charging_start_times:
+                        # Use explicit charging start time (queue-aware)
+                        charging_start = vs.charging_start_times[station]
+                    else:
+                        # Backward compatibility: assume charging starts at arrival
+                        charging_start = vs.arrival_times.get(station, 0.0)
+                    
+                    departure = vs.departure_times.get(station, 0.0)
+                    
+                    # Track when plug is OCCUPIED (charging period only)
+                    events.append((charging_start, 1, vs.vehicle_id))   # +1 plug becomes occupied
+                    events.append((departure, -1, vs.vehicle_id))        # -1 plug becomes free
+            
+            if not events:
+                continue  # No vehicles use this station
+            
+            # Sort by time and check max concurrent usage
+            # At same time, process departures (-1) before arrivals (+1) to free up plugs first
+            events.sort(key=lambda x: (x[0], x[1]))  # Sort by time, then by delta (departures first)
+            current_usage = 0
+            max_usage = 0
+            max_usage_time = 0
+            
+            for time, delta, _ in events:
+                current_usage += delta
+                if current_usage > max_usage:
+                    max_usage = current_usage
+                    max_usage_time = time
+            
+            # Check against capacity
+            capacity = self.params.station_plugs.get(station, 0)
+            if max_usage > capacity:
+                if verbose:
+                    print(f"❌ Station capacity violated at '{station}'")
+                    print(f"   Max concurrent CHARGING vehicles: {max_usage}, Available plugs: {capacity}")
+                    print(f"   Violation occurred at time: {max_usage_time:.2f} minutes")
+                return False
+        
         return True
     
     def get_vehicle_count(self) -> int:
@@ -480,3 +741,96 @@ def print_solution_summary(solution: FleetSolution) -> None:
     print(f"  {'Average:':<12} {makespan_details['average_completion']:.2f} minutes")
     
     print("\n" + "=" * 70)
+
+
+# ========================================
+# QUEUE PROCESSING HELPER
+# ========================================
+
+def process_station_queues(solution: FleetSolution, params: SingleForkParams) -> FleetSolution:
+    """
+    Process queuing at charging stations and compute charging_start_times.
+    
+    Takes a solution where vehicles have arrival_times and charging_amounts,
+    and computes when each vehicle actually starts charging based on:
+    - FIFO (First-In-First-Out) queue discipline
+    - Station capacity (number of available plugs)
+    - Charging duration for each vehicle
+    
+    This function:
+    1. Sorts vehicles by arrival time at each station
+    2. Assigns charging start times based on plug availability
+    3. Updates charging_start_times for each vehicle
+    4. Recalculates departure_times to include queue waiting
+    
+    Args:
+        solution: FleetSolution with arrival_times and charging_amounts
+        params: Problem parameters (needed for charging time calculation)
+        
+    Returns:
+        Updated FleetSolution with charging_start_times populated
+        
+    Example:
+        Station S1 has 1 plug:
+        - Vehicle 1 arrives at t=20, needs 10 min charging
+          → Starts at t=20, finishes at t=30
+        - Vehicle 2 arrives at t=25, needs 15 min charging
+          → Waits until t=30, starts at t=30, finishes at t=45
+          
+    Note:
+        Modifies the solution in place and returns it.
+    """
+    # Process each station
+    all_stations = set(params.upper_stations + params.lower_stations)
+    
+    for station in all_stations:
+        # Collect vehicles charging at this station
+        vehicles_at_station = []
+        for vs in solution.vehicle_solutions:
+            if station in vs.charging_stations:
+                arrival = vs.arrival_times.get(station, 0.0)
+                vehicles_at_station.append((arrival, vs))
+        
+        if not vehicles_at_station:
+            continue  # No vehicles at this station
+        
+        # Sort by arrival time (FIFO)
+        vehicles_at_station.sort(key=lambda x: x[0])
+        
+        # Track when each plug becomes available
+        station_capacity = params.station_plugs.get(station, 1)
+        plug_available_times = [0.0] * station_capacity  # When each plug becomes free
+        
+        # Assign charging start times
+        for arrival_time, vs in vehicles_at_station:
+            # Find earliest available plug
+            earliest_plug_idx = min(range(station_capacity), key=lambda i: plug_available_times[i])
+            earliest_available = plug_available_times[earliest_plug_idx]
+            
+            # Vehicle can start charging when: max(arrival_time, plug_available_time)
+            charging_start = max(arrival_time, earliest_available)
+            
+            # Calculate charging duration
+            battery_kwh = params.battery_kwh[vs.vehicle_id]
+            soc_before = vs.soc_at_nodes.get(station, 0.5)
+            energy_charged = vs.charging_amounts.get(station, 0.0)
+            soc_after = soc_before + (energy_charged / battery_kwh)
+            
+            # Get charging time from params
+            charging_duration_sec = params.charge_time_seconds(
+                soc_before, soc_after, battery_kwh, station
+            )
+            charging_duration_min = charging_duration_sec / 60.0
+            
+            # Update vehicle's charging_start_times
+            if vs.charging_start_times is None:
+                vs.charging_start_times = {}
+            vs.charging_start_times[station] = charging_start
+            
+            # Update departure time to include queue wait + charging
+            vs.departure_times[station] = charging_start + charging_duration_min
+            
+            # Mark plug as busy until this vehicle finishes
+            plug_available_times[earliest_plug_idx] = charging_start + charging_duration_min
+    
+    return solution

@@ -13,22 +13,27 @@ Route multiple electric vehicles through a fork-shaped network with charging sta
 ## 🚗 Features
 
 - **Realistic Charging Physics**: SOC-dependent power curves with efficiency losses
+- **Queue Modeling**: Vehicles wait at stations (FIFO discipline) when plugs are occupied
 - **Heterogeneous Fleet**: 5 vehicles with different battery capacities (40-80 kWh)
 - **Varied Stations**: 3 stations with different speeds, prices, and capacities
 - **Multi-Objective**: Time vs cost trade-offs with configurable weights
+- **Interactive Simulation**: Real-time animated visualization of solutions
 - **Comprehensive Visualization**: Network, parameters, solutions, and objectives
 - **Well-Documented**: Detailed inline comments and documentation
 
 ## 📁 File Structure
 
 ```
-├── params.py                    # Problem parameters and physics models
-├── objectives.py                # Objective functions and evaluation
-├── visualize_params.py          # Network and parameter visualization
-├── visualize_objectives.py      # Solution visualization
-├── example_objectives.py        # Usage examples and demonstrations
-├── DOCUMENTATION.md             # Comprehensive documentation
-└── LINE_BY_LINE_EXPLANATION.md  # Detailed code explanations
+├── params.py                           # Problem parameters and physics models
+├── objectives.py                       # Objective functions and evaluation
+├── visualize_params.py                 # Network and parameter visualization
+├── visualize_objectives.py             # Solution visualization
+├── simulation_gui.py                   # 🆕 Interactive simulation GUI
+├── example_objectives.py               # Usage examples and demonstrations
+├── DOCUMENTATION.md                    # Comprehensive documentation
+├── LINE_BY_LINE_EXPLANATION.md         # Detailed code explanations
+├── DECISION_VARIABLES_AND_CONSTRAINTS.md  # Decision variables and constraints reference
+└── QUEUE_IMPLEMENTATION_SUMMARY.md     # Queue modeling documentation
 ```
 
 ## 🚀 Quick Start
@@ -78,6 +83,48 @@ python example_objectives.py
 
 ```bash
 python visualize_objectives.py
+```
+
+### 5. 🎬 Interactive Simulation (NEW!)
+
+Watch your solution come to life with the **interactive animated simulation**:
+
+```bash
+python simulation_gui.py
+```
+
+**Features**:
+- ✅ Real-time animation of vehicles moving through the network
+- ✅ Queue visualization at charging stations
+- ✅ Live charging progress bars
+- ✅ Metrics dashboard updating in real-time
+- ✅ Timeline showing complete journey for all vehicles
+- ✅ Playback controls (play/pause, speed adjustment, reset)
+
+**Controls**:
+- **Play/Pause** button: Start/stop the animation
+- **Speed slider**: Adjust from 0.1x to 5x playback speed
+- **Reset** button: Restart simulation from beginning
+
+**What You'll See**:
+- 🔵 Colored circles moving = vehicles traveling through network
+- 🟢 Green stations = upper branch (S1, S2)
+- 🔴 Red stations = lower branch (S3)
+- 🟠 Orange bars in timeline = active charging
+- 🟡 Yellow bars in timeline = queue waiting
+- 📊 Real-time metrics: traveling/charging/completed counts
+
+**Usage in Your Code**:
+```python
+from simulation_gui import simulate_solution
+from example_objectives import create_sample_solution
+from params import make_toy_params
+
+solution = create_sample_solution()
+params = make_toy_params()
+
+# Launch interactive simulation
+simulate_solution(solution, params)
 ```
 
 ## 📊 Problem Instance Details
@@ -167,6 +214,40 @@ visualize_scenario_comparison(solution, scenarios, save_path='comparison.png')
 **Shows**: How different weight settings affect objective values
 
 ## 🔬 Key Concepts
+
+### Queue Modeling at Charging Stations
+
+**Realistic Queue Behavior**:
+- Vehicles wait **at the station** when all plugs are occupied (not at previous nodes)
+- FIFO (First-In-First-Out) queue discipline
+- Separate tracking of queue waiting time vs. charging time
+
+**Queue-Aware Fields** in `VehicleSolution`:
+```python
+charging_start_times: Dict[str, float]  # When charging actually starts (after queue wait)
+
+# Example:
+arrival_times={'S1': 24}        # Arrives at station
+charging_start_times={'S1': 30}  # Starts charging (waited 6 min in queue)
+departure_times={'S1': 45}      # Finishes charging
+```
+
+**Automatic Queue Processing**:
+```python
+from objectives import process_station_queues
+
+# Create solution with just arrival times and charging amounts
+solution = create_basic_solution()
+
+# Automatically compute queue waiting and charging start times
+solution = process_station_queues(solution, params)
+# Now charging_start_times are populated based on FIFO and station capacity!
+```
+
+**Queue Metrics**:
+- `get_total_queue_time()`: Time spent waiting in queues
+- `get_total_charging_time()`: Time spent actually charging (excludes queue)
+- `get_total_time_at_stations()`: Total time at stations (queue + charging)
 
 ### Charging Physics
 

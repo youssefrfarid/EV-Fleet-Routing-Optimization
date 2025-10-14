@@ -33,18 +33,31 @@ Multi-Vehicle Electric Vehicle Fleet Routing and Charging Optimization system.
 - `make_toy_params()`: Factory function for test instance with 5 vehicles
 
 ### objectives.py
-**Purpose**: Objective functions and solution evaluation.
+**Purpose**: Objective functions, solution evaluation, and queue processing.
 
 **Key Classes**:
 - `VehicleSolution`: Single vehicle's route, charging plan, and timing
+  - NEW: `charging_start_times` field for queue modeling
+  - NEW: `get_total_queue_time()` - time spent waiting
+  - NEW: `get_total_time_at_stations()` - queue + charging
+  - Updated: `get_total_charging_time()` - excludes queue wait
 - `FleetSolution`: Complete solution for entire fleet
+  - Enhanced: `is_feasible()` - now checks 7 comprehensive constraints
+  - Queue-aware capacity checking
 
-**Key Functions**:
+**Objective Functions**:
 - `objective_makespan()`: Returns max completion time (MINIMIZE)
 - `objective_total_cost()`: Returns sum of charging costs (MINIMIZE)
 - `objective_weighted()`: Combines both with weights
 - `evaluate_solution()`: Comprehensive analysis with all metrics
 - `print_solution_summary()`: Human-readable output
+
+**NEW Queue Processing**:
+- `process_station_queues()`: Automatically computes charging start times based on FIFO queue discipline
+  - Handles station capacity constraints
+  - Assigns plugs to vehicles in order of arrival
+  - Updates departure times to include queue waiting
+  - Essential for realistic queue modeling
 
 ### visualize_params.py
 **Purpose**: Visualize problem structure before solving.
@@ -72,12 +85,44 @@ Multi-Vehicle Electric Vehicle Fleet Routing and Charging Optimization system.
   - Journey details
 - `visualize_scenario_comparison()`: Compare different weight settings
 
+### simulation_gui.py (NEW!)
+**Purpose**: Interactive real-time simulation of solutions.
+
+**Key Class**:
+- `EVFleetSimulation`: Animated visualization with playback controls
+  - Real-time vehicle movement through network
+  - Queue visualization at charging stations
+  - Live charging progress bars
+  - Metrics dashboard
+  - Timeline view with charging/queue breakdown
+
+**Features**:
+- **Auto-play**: Animation starts automatically
+- **Playback controls**: Play/pause, speed adjustment (0.1x-5x), reset
+- **Vehicle tracking**: Colored circles move through network in real-time
+- **Queue display**: Shows which vehicles are waiting vs. charging
+- **Progress bars**: Visual charging progress at each station
+- **Console output**: Real-time status updates every 5 minutes
+
+**Functions**:
+- `simulate_solution()`: Launch interactive GUI for any solution
+- `_get_vehicle_position()`: Interpolates position along edges
+- `_get_vehicle_status()`: Determines traveling/queued/charging state
+- `_update_frame()`: Animation update callback (100ms interval)
+
+**Usage**:
+```python
+from simulation_gui import simulate_solution
+simulate_solution(solution, params)
+# Watch the solution execute in real-time!
+```
+
 ### example_objectives.py
 **Purpose**: Tutorial and testing.
 
 **Functions**:
-- `create_sample_solution()`: Manually constructs realistic feasible solution
-- Main execution: Demonstrates objective calculation and scenario analysis
+- `create_sample_solution()`: Manually constructs realistic feasible solution with queue modeling
+- Main execution: Demonstrates objective calculation, queue analysis, and scenario analysis
 
 ---
 
