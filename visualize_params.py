@@ -184,14 +184,29 @@ def visualize_charging_time_heatmap(params, save_path=None):
     """
     Create a heatmap showing charging time for different SOC ranges at each station.
     """
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    num_vehicles = len(params.battery_kwh)
+    # Create grid layout: 2 or 3 columns depending on number of vehicles
+    ncols = min(3, num_vehicles)
+    nrows = int(np.ceil(num_vehicles / ncols))
+    
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6*ncols, 5*nrows))
+    # Ensure axes is always 2D for consistent indexing
+    if num_vehicles == 1:
+        axes = np.array([[axes]])
+    elif nrows == 1:
+        axes = axes.reshape(1, -1)
+    elif ncols == 1:
+        axes = axes.reshape(-1, 1)
     
     stations_list = list(params.upper_stations) + list(params.lower_stations)
     soc_start_range = np.linspace(0.1, 0.8, 15)
     soc_end_range = np.linspace(0.3, 1.0, 15)
     
     for vehicle_idx, battery_kwh in enumerate(params.battery_kwh):
-        ax = axes[vehicle_idx]
+        row = vehicle_idx // ncols
+        col = vehicle_idx % ncols
+        ax = axes[row, col]
+        
         ax.set_title(f'EV {vehicle_idx+1} ({battery_kwh:.0f} kWh) - Charging Time (minutes)', 
                     fontsize=12, fontweight='bold')
         
@@ -218,6 +233,12 @@ def visualize_charging_time_heatmap(params, save_path=None):
         ax.set_yticklabels([f'{soc*100:.0f}%' for soc in soc_start_range[::3]])
         
         plt.colorbar(im, ax=ax, label='Time (minutes)')
+    
+    # Hide any unused subplots
+    for idx in range(num_vehicles, nrows * ncols):
+        row = idx // ncols
+        col = idx % ncols
+        axes[row, col].axis('off')
     
     plt.tight_layout()
     
