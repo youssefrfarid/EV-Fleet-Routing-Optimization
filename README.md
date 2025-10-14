@@ -241,33 +241,4 @@ def optimize(params):
     return best_solution(population)
 ```
 
-## 📖 Citation
-
-If you use this code in your research, please cite:
-```
-EV Fleet Routing Optimization
-Electric Vehicle Routing with Charging Station Selection
-[Your Name/Institution]
-2025
-```
-
-## 📝 License
-
-[Specify your license here]
-
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
-- Additional network topologies
-- More realistic charging models
-- Time-varying electricity prices
-- Traffic/weather integration
-- Optimization algorithm implementations
-
-## 📧 Contact
-
-[Your contact information]
-
----
-
 **Happy Optimizing! ⚡🚗**
