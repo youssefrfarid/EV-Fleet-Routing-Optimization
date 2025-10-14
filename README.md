@@ -94,9 +94,9 @@ python visualize_objectives.py
 ### Charging Stations (3 Options)
 | Station | Type | Speed | Price (EGP/kWh) | Plugs |
 |---------|------|-------|-----------------|-------|
-| **S1**  | Budget | 50 kW | 0.10 (cheapest) | 3 |
-| **S2**  | Premium | 180 kW | 0.25 (expensive) | 2 |
-| **S3**  | Standard | 100 kW | 0.16 (medium) | 2 |
+| **S1**  | Budget | 50 kW | 0.10 (cheapest) | 2 |
+| **S2**  | Premium | 180 kW | 0.25 (expensive) | 1 |
+| **S3**  | Standard | 100 kW | 0.16 (medium) | 1 |
 
 ### Route Characteristics
 - **Upper Route (J→S1→S2→M)**: Longer time, more station options
