@@ -1,2 +1,12 @@
-\section{Methods}\label{sec2}
-Describe your methodology, model, algorithms, datasets, or experimental setup. Include math and figures as needed. Keep subsections focused and concise.
+\section{Summary of Reviewed Papers}
+Froger et al.~\cite{Froger2022} introduce and solve the Electric Vehicle Routing Problem with Non-Linear charging and Capacitated charging Stations (E-VRP-NL-C). Their primary contribution is a direct, deterministic mathematical model using a flow-based formulation to manage a limited number of chargers. The problem is solved with a matheuristic that combines an Iterated Local Search (ILS) algorithm with a Branch-and-Cut method to minimize total operational time.
+
+Kancharla and Ramadurai~\cite{Kancharla2020} extend this problem by adding a load-dependent discharging rate, where energy consumption increases with the vehicle's cargo weight. They solve their E-VRP-NL-LD-CCS model using an Adaptive Large Neighborhood Search (ALNS) heuristic, which handles capacity constraints procedurally through its station insertion operators rather than in the base mathematical model.
+
+Deng et al.~\cite{Deng2024} focus on the EVRP with Time Windows and Non-Linear charging (EVRPTW-NL), proposing an Improved Differential Evolution (IDE) algorithm as a solution method. Their model incorporates a partial recharging policy and uses a hybrid algorithm enhanced with local search and simulated annealing, but it assumes that charging stations have unlimited capacity.
+
+Keskin et al.~\cite{Keskin2021} address station capacity by modeling the stochastic waiting times that arise from queues. They propose a two-stage, simulation-based heuristic using ALNS. The initial routes are planned using expected waiting times, and recourse actions are taken if realized waiting times cause route infeasibility. This approach introduces robustness against real-world uncertainty but simplifies the problem by assuming a linear charging function.
+
+Karakatič~\cite{Karakatic2021} tackles the Multi-Depot EVRPTW with Non-Linear charging (E-MDVRPTW-NL). The key contribution is a novel Two-Layer Genetic Algorithm (TLGA) where one chromosome layer optimizes the customer route and a second layer optimizes the charging decisions. While this provides an advanced solution structure for a complex multi-depot problem, it does not model charging station capacity constraints.
+
+

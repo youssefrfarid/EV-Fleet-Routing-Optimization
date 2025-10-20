@@ -1,2 +1,39 @@
-\section{Simulation Results}\label{sec4}
-This section should include the simulation environment used to simulate the robot’s motion (Ex. MATLAB/Simulink), the robot’s parameters used (length, width, thickness of each link) and finally the simulation results with the figures and visualization response as well as the comments on each response.
+\section{Extracted Formulation Elements}
+This section consolidates the essential formulation components identified from the reviewed literature, namely the objective functions, decision variables, and constraints used in various EV routing and charging optimization studies. A comparative summary of these extracted elements is presented in Table~\ref{tab:lit_summary}.
+
+\subsection{Objective Functions}
+The primary goal across the reviewed literature is the minimization of a cost or time-based metric. Most papers, including those by Froger et al.~\cite{Froger2022}, Kancharla and Ramadurai~\cite{Kancharla2020}, Deng et al.~\cite{Deng2024}, and Karakatič~\cite{Karakatic2021}, formulate an objective function to minimize the \textbf{total operational time}, which includes driving, charging, and any waiting periods. Keskin et al.~\cite{Keskin2021} introduce a more complex, two-stage objective: minimizing the planned first-stage cost plus the \textbf{expected recourse cost} (e.g., penalties for skipping customers) that arises from stochastic waiting times at stations. This highlights a key modeling choice: optimizing for a deterministic plan versus optimizing for robustness against real-world uncertainty.
+
+\subsection{Decision Variables}
+Across all models, a fundamental decision variable is a \textbf{binary routing variable} (commonly denoted as $x_{ij}$ or similar) that determines whether a vehicle travels along a specific arc between two nodes. Beyond this, the variables differ based on the problem's complexity. To handle charging, all papers that model non-linear functions include continuous variables for the \textbf{State of Charge (SoC)} upon arrival and departure at a station, as well as the \textbf{charging duration} itself. Some papers introduce novel variables to handle specific challenges. For instance, Kancharla and Ramadurai~\cite{Kancharla2020} use a three-index variable ($X_{ij}^l$) to simultaneously decide the route segment and the charging station detour, while Karakatič~\cite{Karakatic2021} employs a unique \textbf{``two-layer'' chromosome} in a genetic algorithm to separate routing decisions from charging decisions. To model capacity, Froger et al.~\cite{Froger2022} introduce \textbf{flow and sequencing variables} ($f_{oo'}$ and $u_{oo'}$) to manage charger allocation, and Keskin et al.~\cite{Keskin2021} use a variable ($w_i$) to represent the \textbf{stochastic waiting time} in a queue.
+
+\subsection{Constraints}
+All reviewed models share a common set of core constraints: battery capacity (ensuring SoC remains within its limits), vehicle load capacity, and customer time windows. The primary distinction lies in how they model the charging process and station capacity. Four of the five papers model \textbf{non-linear charging} using piecewise linear functions, while Keskin et al.~\cite{Keskin2021} use a simpler \textbf{linear charging function}.
+
+Most critically for this project, the modeling of \textbf{station capacity} varies significantly:
+\begin{itemize}
+    \item \textbf{Deterministic Capacity:} Froger et al.~\cite{Froger2022} use a sophisticated flow-based formulation to ensure the number of charging vehicles never exceeds the station's capacity ($C_j$).
+    \item \textbf{Procedural Capacity:} Kancharla and Ramadurai~\cite{Kancharla2020} handle capacity not in their mathematical model, but procedurally within their ALNS heuristic, where station insertion operators check for feasibility.
+    \item \textbf{Stochastic Capacity:} Keskin et al.~\cite{Keskin2021} model capacity by calculating the \textbf{stochastic waiting times} that result from queues, using an M/G/1 queueing model.
+    \item \textbf{No Capacity:} Deng et al.~\cite{Deng2024} and Karakatič~\cite{Karakatic2021} simplify the problem by assuming unlimited station capacity and do not include constraints for queues or waiting times.
+\end{itemize}
+
+
+% Prevent floats from moving past this point
+\FloatBarrier
+\begin{table*}[!b]
+\caption{Summary of Reviewed Literature}
+\label{tab:lit_summary}
+\centering
+% Use fixed-width, wrap-enabled columns so the table doesn't force wide spacing.
+% We avoid editing the document preamble; use p{<width>} columns and \raggedright inside cells.
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.22\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|>{\raggedright\arraybackslash}p{0.26\textwidth}|}
+\hline
+\textbf{Paper} & \textbf{Objective Function} & \textbf{Key Decision Variables} & \textbf{Key Constraints} \\ \hline
+Froger et al.~\cite{Froger2022} & Minimize total operational time (travel, charging, waiting). & Route path, charging duration, \textbf{waiting time}, charger sequencing. & \textbf{Deterministic, flow-based station capacity}, non-linear charging, time limits. \\ \hline
+Kancharla \& Ramadurai~\cite{Kancharla2020} & Minimize total operational time. & Route segment (including CS detour), charging time, vehicle load. & \textbf{Procedural capacity (checked in heuristic)}, load-dependent discharge, non-linear charging. \\ \hline
+Deng et al.~\cite{Deng2024} & Minimize total operational time. & Customer sequence, start/end SoC for charging, charging durations. & \textbf{No station capacity (assumed unlimited)}, non-linear charging, hard time windows. \\ \hline
+Keskin et al.~\cite{Keskin2021} & Minimize expected total cost (planned + recourse). & Initial routes, recourse actions, \textbf{queue waiting time} variables. & \textbf{Stochastic station capacity (queueing)}, linear charging, time windows. \\ \hline
+Karakatič~\cite{Karakatic2021} & Minimize total time (travel, charging, waiting at customers). & Two-layer encoding: customer sequence and charging decisions. & \textbf{No station capacity}, multi-depot setup, non-linear charging, time windows. \\ \hline
+\end{tabular}%
+\end{table*}

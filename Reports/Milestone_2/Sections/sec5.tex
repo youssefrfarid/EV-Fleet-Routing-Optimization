@@ -1,4 +1,118 @@
-\section{Conclusions and Future Recommendations}\label{sec5}
-This section should include the conclusions of your work, a summary of what you have done and the comments of the results.
+%==============================
+\section{Problem Formulation}
+\label{sec:formulation}
+%==============================
 
-Followed by the future recommendation in order to enhance your analysis or future steps to build a full functioning robotic system that you are going to implement in the upcoming milestone.
+We formulate the cooperative EV fleet routing and charging problem on a corridor network with charging stations as a multi-objective optimization that balances fleet completion time and energy cost under nonlinear charging and station-capacity constraints.
+
+%------------------------------
+\subsection{Sets, Indices, and Parameters}
+%------------------------------
+\begin{tabular}{@{}ll@{}}
+$\mathcal{V}$ & set of vehicles, indexed by $i$ \\
+$\mathcal{N}$ & set of nodes indexed by $n$ \\
+$\mathcal{S}\subseteq\mathcal{N}$ & set of charging stations, indexed by $s$ \\
+$\mathcal{A}\subseteq\mathcal{N}\times\mathcal{N}$ & set of directed edges $(u,v)$ \\
+\midrule
+$B_i$ & battery capacity of vehicle $i$ (kWh) \\
+$E_{uv}$ & energy required to traverse edge $(u,v)$ (kWh) \\
+$T_{uv}$ & travel time on edge $(u,v)$ (min) \\
+$C_s$ & number of simultaneous plugs at station $s$ \\
+$p_s$ & energy price at station $s$ (EGP/kWh) \\
+$\eta$ & charging efficiency ($0<\eta\le 1$) \\
+$w_t,\,w_c$ & weights for time and cost objectives \\
+\end{tabular}
+
+\vspace{0.5em}
+\noindent \textbf{Charging-time model.}
+Let $\tau^{\text{chg}}_{i,s}(E_{i,s})$ denote the (nonlinear) charging time at station $s$ for vehicle $i$ when purchasing $E_{i,s}$ kWh. This is computed via SOC-dependent power integration (as implemented in \texttt{params.py: \texttt{charge\_time\_seconds}}).
+
+%------------------------------
+\subsection{Decision Variables}
+%------------------------------
+\begin{tabular}{@{}ll@{}}
+$\displaystyle x_{i,s}\in\{0,1\}$ & 1 if vehicle $i$ charges at station $s$; 0 otherwise \\
+$\displaystyle E_{i,s}\ge 0$ & energy bought (kWh) by vehicle $i$ at station $s$ \\
+$r_i\in\{\text{upper},\text{lower}\}$ & route branch selected for vehicle $i$ \\
+$t^{\text{arr}}_{i,n}\ge 0$ & arrival time (min) of vehicle $i$ at node $n$ \\
+$t^{\text{dep}}_{i,n}\ge 0$ & departure time (min) of vehicle $i$ at node $n$ \\
+$t^{\text{start}}_{i,s}\ge 0$ & charging start time (min) at station $s$ \\
+$SOC_{i,n}\in[0,1]$ & state of charge $i$ upon arrival at node $n$ \\
+\end{tabular}
+
+%------------------------------
+\subsection{Objectives}
+%------------------------------
+\paragraph{(1) Makespan (minimize).}
+\begin{equation*}
+f_1 \;=\; \max_{i\in\mathcal{V}} \; t^{\text{arr}}_{i,B}.
+\end{equation*}
+
+\paragraph{(2) Total charging cost (minimize).}
+\begin{equation*}
+f_2 \;=\; \sum_{i\in\mathcal{V}}\;\sum_{s\in\mathcal{S}} p_s \, E_{i,s}.
+\end{equation*}
+
+\paragraph{Weighted single objective (used in code).}
+\begin{equation*}
+\min \; w_t\, f_1 \;+\; w_c\, f_2.
+\end{equation*}
+
+%------------------------------
+\subsection{Constraints}
+%------------------------------
+
+\subsubsection{Route feasibility and timing.}
+Each vehicle starts at $A$, ends at $B$, and follows connected edges:
+\begin{align*}
+&\text{route}_i: A \leadsto B \text{ along connected } (u,v)\in\mathcal{A}, \qquad \forall i\in\mathcal{V},\\
+&t^{\text{dep}}_{i,n}\;\ge\; t^{\text{arr}}_{i,n}, \qquad \forall i\in\mathcal{V},\; n\in\mathcal{N},\\
+&t^{\text{arr}}_{i,v}\;\ge\; t^{\text{dep}}_{i,u} + T_{uv}, \qquad \forall i\in\mathcal{V},\; (u,v)\in\mathcal{A} \text{ on route}_i.
+\end{align*}
+
+\subsubsection{SOC bounds and energy balance.}
+\begin{align*}
+&0 \;\le\; SOC_{i,n} \;\le\; 1, \qquad \forall i\in\mathcal{V},\; n\in\mathcal{N},\\
+&SOC_{i,v} \;=\; SOC_{i,u} + \frac{E_{i,u}}{B_i}\,\mathbf{1}_{\{u\in\mathcal{S}\}} - \frac{E_{uv}}{B_i},\\
+&\quad \forall i\in\mathcal{V},\; (u,v)\in\mathcal{A}\text{ on route}_i.
+\end{align*}
+(Here $E_{i,u}$ is the energy charged at station $u$ if $u\in\mathcal{S}$; otherwise $E_{i,u}=0$.)
+
+\subsubsection{Charging logic at stations.}
+If vehicle $i$ charges at station $s$:
+\begin{align*}
+&x_{i,s}=1 \;\Rightarrow\; s\in\text{route}_i,\quad E_{i,s}\ge 0, \\
+&t^{\text{dep}}_{i,s} \;=\; t^{\text{start}}_{i,s} \;+\; \tau^{\text{chg}}_{i,s}(E_{i,s}).
+\end{align*}
+If $x_{i,s}=0$, then $E_{i,s}=0$ and $t^{\text{start}}_{i,s}=t^{\text{arr}}_{i,s}$ by convention.
+
+\subsubsection{Station capacity with queuing (plug occupancy).}
+Let $z_{i,s}(t)$ be an indicator that equals 1 if vehicle $i$ is \emph{actively charging} at station $s$ at time $t$, i.e.,
+$z_{i,s}(t)=1$ for $t\in[t^{\text{start}}_{i,s},\,t^{\text{dep}}_{i,s})$ and $0$ otherwise. Then
+\begin{equation*}
+\sum_{i\in\mathcal{V}} z_{i,s}(t) \;\le\; C_s, \qquad \forall s\in\mathcal{S},\;\forall t\ge 0,
+\end{equation*}
+which enforces concurrent-plug limits (FIFO queuing determines $t^{\text{start}}_{i,s}$).
+
+\subsubsection{No overcharge / non-negativity.}
+\begin{align*}
+&SOC_{i,s} + \frac{E_{i,s}}{B_i} \;\le\; 1, \qquad \forall i\in\mathcal{V},\; s\in\mathcal{S},\\
+&E_{i,s}\ge 0,\;\; t^{\text{arr}}_{i,n}\ge 0,\;\; t^{\text{dep}}_{i,n}\ge 0, \qquad \forall i,n,s.
+\end{align*}
+(Optional) reserve at destination: $SOC_{i,B}\ge SOC_{\min}$.
+
+%------------------------------
+\subsection{Assumptions}
+%------------------------------
+\begin{enumerate}
+\item Static setting (no dynamic requests); all vehicles start at $A$ and end at $B$.
+\item Nonlinear charging time derived from SOC-dependent power and station/EV limits; efficiency $\eta<1$.
+\item Queues at stations follow FIFO and are capacity-aware (based on plug occupancy).
+\item Charging can occur only at $s\in\mathcal{S}$; travel/energy on edges $(u,v)$ are known.
+\item Time windows, if present, are handled via bounds on $t^{\text{arr}}_{i,n}$ (omitted here for brevity).
+\end{enumerate}
+
+% %------------------------------
+% \subsection{Implementation Note}
+% %------------------------------
+% The above model is implemented in Python. Objective functions $f_1$ (makespan) and $f_2$ (total cost) correspond to \texttt{objective\_makespan()} and \texttt{objective\_total\_cost()} in \texttt{objectives.py}. Constraint checks (route validity, SOC bounds, energy balance, time consistency, overcharge, non-negativity, and station capacity with queuing) are verified via \texttt{FleetSolution.is\_feasible()}. Queue-aware charging starts $t^{\text{start}}_{i,s}$ are computed by \texttt{process\_station\_queues()} based on FIFO and $C_s$.
