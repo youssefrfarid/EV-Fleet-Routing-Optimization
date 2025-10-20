@@ -26,71 +26,161 @@ def create_sample_solution():
     - Vehicles 4-5 take lower route (S3)
     """
     params = make_toy_params()
-    
-    # Vehicle 1: Compact EV (40 kWh), takes upper route, charges at S1
-    v1 = VehicleSolution(
-        vehicle_id=0,
-        route=['A', 'J', 'S1', 'S2', 'M', 'B'],
-        charging_stations=['S1'],
-        charging_amounts={'S1': 12.0},  # Charges 12 kWh at S1
-        arrival_times={'A': 0, 'J': 15, 'S1': 27, 'S2': 45, 'M': 55, 'B': 68},
-        departure_times={'A': 0, 'J': 15, 'S1': 42, 'S2': 45, 'M': 55, 'B': 68},
-        soc_at_nodes={'A': 0.7000, 'J': 0.5875, 'S1': 0.4975, 'S2': 0.7375, 'M': 0.6500, 'B': 0.5450}
-    )
-    
-    # Vehicle 2: Sedan (55 kWh), takes upper route, charges at S2
-    v2 = VehicleSolution(
-        vehicle_id=1,
-        route=['A', 'J', 'S1', 'S2', 'M', 'B'],
-        charging_stations=['S2'],
-        charging_amounts={'S2': 18.0},  # Charges 18 kWh at S2
-        arrival_times={'A': 0, 'J': 15, 'S1': 27, 'S2': 35, 'M': 58, 'B': 71},
-        departure_times={'A': 0, 'J': 15, 'S1': 27, 'S2': 48, 'M': 58, 'B': 71},
-        soc_at_nodes={'A': 0.5500, 'J': 0.4682, 'S1': 0.4027, 'S2': 0.3591, 'M': 0.6227, 'B': 0.5464}
-    )
-    
-    # Vehicle 3: Sedan+ (62 kWh), takes upper route, charges at S1 and S2
-    # Arrives at S2 same time as v2 but waits in queue
-    v3 = VehicleSolution(
-        vehicle_id=2,
-        route=['A', 'J', 'S1', 'S2', 'M', 'B'],
-        charging_stations=['S1', 'S2'],
-        charging_amounts={'S1': 10.0, 'S2': 8.0},
-        arrival_times={'A': 0, 'J': 15, 'S1': 27, 'S2': 41, 'M': 69, 'B': 82},  # Arrives at S2 at 41
-        departure_times={'A': 0, 'J': 15, 'S1': 41, 'S2': 59, 'M': 69, 'B': 82},  # Total time at S2: 41→59
-        soc_at_nodes={'A': 0.4500, 'J': 0.3774, 'S1': 0.3194, 'S2': 0.4419, 'M': 0.5145, 'B': 0.4468},
-        charging_start_times={'S1': 27, 'S2': 48}  # Waits at S2 from 41→48, charges 48→59
-    )
-    
-    # Vehicle 4: SUV (75 kWh), takes lower route, charges at S3
-    v4 = VehicleSolution(
-        vehicle_id=3,
-        route=['A', 'J', 'S3', 'M', 'B'],
-        charging_stations=['S3'],
-        charging_amounts={'S3': 20.0},
-        arrival_times={'A': 0, 'J': 15, 'S3': 24, 'M': 52, 'B': 65},
-        departure_times={'A': 0, 'J': 15, 'S3': 38, 'M': 52, 'B': 65},
-        soc_at_nodes={'A': 0.6000, 'J': 0.5400, 'S3': 0.5040, 'M': 0.6960, 'B': 0.6400}
-    )
-    
-    # Vehicle 5: Large SUV (80 kWh), takes lower route, charges at S3
-    # Arrives at S3 same time as v4 but waits in queue at the station
-    v5 = VehicleSolution(
-        vehicle_id=4,
-        route=['A', 'J', 'S3', 'M', 'B'],
-        charging_stations=['S3'],
-        charging_amounts={'S3': 25.0},
-        arrival_times={'A': 0, 'J': 15, 'S3': 24, 'M': 70, 'B': 83},  # Arrives at S3 at 24 (same as v4)
-        departure_times={'A': 0, 'J': 15, 'S3': 56, 'M': 70, 'B': 83},  # Total time at S3: 24→56
-        soc_at_nodes={'A': 0.5000, 'J': 0.4437, 'S3': 0.4100, 'M': 0.6525, 'B': 0.6000},
-        charging_start_times={'S3': 38}  # Waits at S3 from 24→38, charges 38→56
-    )
-    
-    solution = FleetSolution(
-        vehicle_solutions=[v1, v2, v3, v4, v5],
-        params=params
-    )
-    
+
+    vehicle_plans = [
+        {
+            "vehicle_id": 0,
+            "route": ['A', 'J', 'S1', 'S2', 'M', 'B'],
+            "charging_amounts": {'S1': 18.0, 'S2': 12.0},
+            "speed_levels": {
+                ('A', 'J'): 2,
+                ('J', 'S1'): 2,
+                ('S1', 'S2'): 3,
+                ('S2', 'M'): 4,
+                ('M', 'B'): 3,
+            },
+        },
+        {
+            "vehicle_id": 1,
+            "route": ['A', 'J', 'S1', 'S2', 'M', 'B'],
+            "charging_amounts": {'S1': 12.0, 'S2': 20.0},
+            "speed_levels": {
+                ('A', 'J'): 3,
+                ('J', 'S1'): 2,
+                ('S1', 'S2'): 5,
+                ('S2', 'M'): 2,
+                ('M', 'B'): 2,
+            },
+        },
+        {
+            "vehicle_id": 2,
+            "route": ['A', 'J', 'S1', 'S2', 'M', 'B'],
+            "charging_amounts": {'S1': 14.0, 'S2': 18.0},
+            "speed_levels": {
+                ('A', 'J'): 4,
+                ('J', 'S1'): 3,
+                ('S1', 'S2'): 2,
+                ('S2', 'M'): 5,
+                ('M', 'B'): 2,
+            },
+        },
+        {
+            "vehicle_id": 3,
+            "route": ['A', 'J', 'S3', 'M', 'B'],
+            "charging_amounts": {'S3': 20.0},
+            "speed_levels": {
+                ('A', 'J'): 4,
+                ('J', 'S3'): 5,
+                ('S3', 'M'): 2,
+                ('M', 'B'): 2,
+            },
+        },
+        {
+            "vehicle_id": 4,
+            "route": ['A', 'J', 'S3', 'M', 'B'],
+            "charging_amounts": {'S3': 26.0},
+            "speed_levels": {
+                ('A', 'J'): 2,
+                ('J', 'S3'): 3,
+                ('S3', 'M'): 5,
+                ('M', 'B'): 1,
+            },
+        },
+    ]
+
+    def build_vehicle(plan: dict) -> VehicleSolution:
+        vid = plan["vehicle_id"]
+        route = plan["route"]
+        speed_levels = plan["speed_levels"]
+        charging_amounts = plan["charging_amounts"]
+        charging_stations = [node for node in route if node in charging_amounts]
+
+        battery_kwh = params.battery_kwh[vid]
+        soc0 = params.soc0[vid]
+        energy = battery_kwh * soc0
+
+        arrival_times = {route[0]: 0.0}
+        departure_times = {route[0]: 0.0}
+        soc_at_nodes = {route[0]: soc0}
+        charging_start_times = {} if charging_stations else None
+
+        for idx in range(len(route) - 1):
+            u = route[idx]
+            v = route[idx + 1]
+            edge = (u, v)
+
+            travel_time = params.get_edge_time(edge, speed_levels[edge])
+            energy_use = params.get_edge_energy(edge, speed_levels[edge])
+
+            arrival = departure_times[u] + travel_time
+            arrival_times[v] = arrival
+
+            energy -= energy_use
+            soc_at_nodes[v] = energy / battery_kwh
+
+            departure = arrival
+            if v in charging_amounts:
+                charge_kwh = charging_amounts[v]
+                if charging_start_times is not None:
+                    charging_start_times[v] = arrival
+                soc_after = soc_at_nodes[v] + charge_kwh / battery_kwh
+                charge_minutes = params.charge_time_seconds(
+                    soc_at_nodes[v], soc_after, battery_kwh, v
+                ) / 60.0
+                departure = arrival + charge_minutes
+                energy += charge_kwh
+
+            departure_times[v] = departure
+
+        return VehicleSolution(
+            vehicle_id=vid,
+            route=route,
+            charging_stations=charging_stations,
+            charging_amounts=charging_amounts,
+            arrival_times=arrival_times,
+            departure_times=departure_times,
+            soc_at_nodes=soc_at_nodes,
+            charging_start_times=charging_start_times,
+            speed_levels=speed_levels,
+        )
+
+    vehicle_solutions = [build_vehicle(plan) for plan in vehicle_plans]
+
+    solution = FleetSolution(vehicle_solutions=vehicle_solutions, params=params)
+
+    solution = process_station_queues(solution, params)
+
+    for vs in solution.vehicle_solutions:
+        route = vs.route
+        vs.arrival_times[route[0]] = vs.arrival_times.get(route[0], 0.0)
+        vs.departure_times[route[0]] = vs.departure_times.get(route[0], vs.arrival_times[route[0]])
+
+        for i in range(len(route) - 1):
+            current = route[i]
+            nxt = route[i + 1]
+            edge = (current, nxt)
+
+            travel_time = params.get_edge_time(edge, vs.get_speed_level(edge))
+            depart_current = vs.departure_times[current]
+            arrival_next = depart_current + travel_time
+            vs.arrival_times[nxt] = arrival_next
+
+            if nxt in vs.charging_stations:
+                if vs.charging_start_times is not None:
+                    start = vs.charging_start_times.get(nxt, arrival_next)
+                    if start < arrival_next:
+                        vs.charging_start_times[nxt] = arrival_next
+                        start = arrival_next
+                    departure = max(vs.departure_times.get(nxt, start), start)
+                    vs.departure_times[nxt] = departure
+                else:
+                    vs.departure_times[nxt] = max(vs.departure_times.get(nxt, arrival_next), arrival_next)
+            else:
+                vs.departure_times[nxt] = arrival_next
+
+        final_node = route[-1]
+        vs.departure_times[final_node] = vs.arrival_times[final_node]
+
     return solution
 
 

@@ -18,7 +18,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button, Slider
 import numpy as np
 from typing import Dict, List, Tuple
-from params import SingleForkParams
+from params import SingleForkParams, SPEED_LEVELS
 from objectives import FleetSolution, VehicleSolution
 
 
@@ -327,6 +327,17 @@ class EVFleetSimulation:
         queued = sum(1 for s in self.vehicle_states if 'queued' in s['status'])
         charging = sum(1 for s in self.vehicle_states if 'charging' in s['status'])
         completed = sum(1 for s in self.vehicle_states if s['status'] == 'completed')
+
+        speed_lines = ["SPEED LEVELS:"]
+        for vs in self.solution.vehicle_solutions:
+            segments = []
+            for u, v in zip(vs.route[:-1], vs.route[1:]):
+                level = vs.get_speed_level((u, v))
+                name = SPEED_LEVELS.get(level, f"Level {level}")
+                short = "".join(word[0] for word in name.split()).upper()
+                segments.append(f"{u}->{v}=L{level} ({short})")
+            speed_lines.append(f"  V{vs.vehicle_id + 1}: " + ", ".join(segments))
+        speed_text = "\n".join(speed_lines)
         
         metrics_text = f"""
 TIME: {self.current_time:.1f} / {self.max_time:.1f} min
@@ -340,6 +351,8 @@ VEHICLE STATUS:
 OBJECTIVES:
   Makespan: {self.max_time:.1f} min
   Total Cost: {sum(vs.get_total_charging_cost(self.params) for vs in self.solution.vehicle_solutions):.2f} EGP
+
+{speed_text}
         """
         
         self.ax_metrics.text(0.1, 0.9, metrics_text.strip(), 
