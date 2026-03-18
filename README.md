@@ -2,10 +2,23 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
+[![CI](https://github.com/youssefrfarid/EV-Fleet-Routing-Optimization/actions/workflows/lint.yml/badge.svg)](https://github.com/youssefrfarid/EV-Fleet-Routing-Optimization/actions)
 
 A multi-algorithm optimization framework for **cooperative electric vehicle fleet routing and charging** on realistic road networks. Compares five approaches — Simulated Annealing (SA), Genetic Algorithm (GA), Particle Swarm Optimization (PSO), Teaching-Learning Based Optimization (TLBO), and Deep Q-Network (DQN) — under nonlinear charging physics, shared station capacity with FIFO queuing, and discrete speed-level trade-offs.
 
 > **Paper** — *Comparative Metaheuristic and Reinforcement Learning Optimization for Cooperative Electric Vehicle Fleet Routing with Nonlinear Charging and Shared Station Capacity* ([PDF](docs/EV_Fleet_Routing_Optimization.pdf))
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Results](#results)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Problem Instance](#problem-instance)
+- [Authors](#authors)
+- [License](#license)
 
 ---
 
