@@ -18,7 +18,6 @@ from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -1531,11 +1530,16 @@ def main():
     
     # Main content area
     selected_algorithms = []
-    if run_sa: selected_algorithms.append("SA")
-    if run_ga: selected_algorithms.append("GA")
-    if run_pso: selected_algorithms.append("PSO")
-    if run_tlbo: selected_algorithms.append("TLBO")
-    if run_rl: selected_algorithms.append("RL")
+    if run_sa:
+        selected_algorithms.append("SA")
+    if run_ga:
+        selected_algorithms.append("GA")
+    if run_pso:
+        selected_algorithms.append("PSO")
+    if run_tlbo:
+        selected_algorithms.append("TLBO")
+    if run_rl:
+        selected_algorithms.append("RL")
     
     if not selected_algorithms:
         st.warning("Please select at least one algorithm to run.")

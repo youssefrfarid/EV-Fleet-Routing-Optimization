@@ -93,7 +93,6 @@ def validate_speed_assignments(edge: Tuple[str, str]) -> None:
 
 
 def default_speed_fallback(edge: Tuple[str, str]) -> None:
-    params = make_toy_params()
     vs_default = VehicleSolution(
         vehicle_id=2,
         route=["A", "J", "S1", "S2", "M", "B"],

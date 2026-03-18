@@ -6,11 +6,9 @@ Generate comprehensive side-by-side comparison visualization for GA vs SA.
 from __future__ import annotations
 
 import sys
-import matplotlib.pyplot as plt
 import numpy as np
 import webbrowser
 from pathlib import Path
-from typing import Tuple
 
 # Allow running as `python scripts/visualize_comparison.py`
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -304,19 +302,19 @@ def _generate_vehicle_comparison_html(sa_sol, ga_sol, params):
     for i, (sa_vs, ga_vs) in enumerate(zip(sa_sol.vehicle_solutions, ga_sol.vehicle_solutions)):
         # Completion time
         html += f'<tr><td rowspan="4"><strong>Vehicle {i+1}</strong><br>({params.battery_kwh[i]:.0f} kWh)</td>'
-        html += f'<td>Completion Time</td>'
+        html += '<td>Completion Time</td>'
         html += f'<td class="sa-col">{sa_vs.get_completion_time():.2f} min</td>'
         html += f'<td class="ga-col">{ga_vs.get_completion_time():.2f} min</td>'
         html += f'<td>{sa_vs.get_completion_time() - ga_vs.get_completion_time():.2f}</td></tr>'
         
         # Charging cost
-        html += f'<tr><td>Charging Cost</td>'
+        html += '<tr><td>Charging Cost</td>'
         html += f'<td class="sa-col">{sa_vs.get_total_charging_cost(params):.2f} EGP</td>'
         html += f'<td class="ga-col">{ga_vs.get_total_charging_cost(params):.2f} EGP</td>'
         html += f'<td>{sa_vs.get_total_charging_cost(params) - ga_vs.get_total_charging_cost(params):.2f}</td></tr>'
         
         # Charging time
-        html += f'<tr><td>Charging Time</td>'
+        html += '<tr><td>Charging Time</td>'
         html += f'<td class="sa-col">{sa_vs.get_total_charging_time():.2f} min</td>'
         html += f'<td class="ga-col">{ga_vs.get_total_charging_time():.2f} min</td>'
         html += f'<td>{sa_vs.get_total_charging_time() - ga_vs.get_total_charging_time():.2f}</td></tr>'
@@ -324,7 +322,7 @@ def _generate_vehicle_comparison_html(sa_sol, ga_sol, params):
         # Route
         sa_route_str = ' → '.join(sa_vs.route)
         ga_route_str = ' → '.join(ga_vs.route)
-        html += f'<tr><td>Route</td>'
+        html += '<tr><td>Route</td>'
         html += f'<td class="sa-col route-cell">{sa_route_str}</td>'
         html += f'<td class="ga-col route-cell">{ga_route_str}</td>'
         html += f'<td>{"✓ Same" if sa_vs.route == ga_vs.route else "✗ Different"}</td></tr>'

@@ -20,7 +20,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from common.visualization import generate_dashboard
 from common.params import make_toy_params
-from common.objectives import FleetSolution
 
 def run_my_algorithm():
     """

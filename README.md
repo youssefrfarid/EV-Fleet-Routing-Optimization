@@ -1,6 +1,6 @@
 # EV Fleet Routing Optimization
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 
 A multi-algorithm optimization framework for **cooperative electric vehicle fleet routing and charging** on realistic road networks. Compares five approaches — Simulated Annealing (SA), Genetic Algorithm (GA), Particle Swarm Optimization (PSO), Teaching-Learning Based Optimization (TLBO), and Deep Q-Network (DQN) — under nonlinear charging physics, shared station capacity with FIFO queuing, and discrete speed-level trade-offs.
@@ -35,6 +35,30 @@ The system routes multiple heterogeneous EVs through a fork-shaped road network 
 
 ---
 
+## Results
+
+<p align="center">
+  <img src="docs/figures/five_algorithm_comparison.jpg" width="700" alt="Five-algorithm comparison across case studies" />
+</p>
+<p align="center"><em>Figure 1 — Five-algorithm comparison across case studies.</em></p>
+
+<p align="center">
+  <img src="docs/figures/pso_ga_sa_benchmark.jpg" width="700" alt="PSO vs GA vs SA benchmark" />
+</p>
+<p align="center"><em>Figure 2 — PSO vs GA vs SA benchmark on the double-fork network.</em></p>
+
+<p align="center">
+  <img src="docs/figures/adaptive_vs_static_inertia.jpg" width="500" alt="Adaptive vs static inertia convergence" />
+</p>
+<p align="center"><em>Figure 3 — Adaptive vs static inertia weight convergence for PSO.</em></p>
+
+<p align="center">
+  <img src="docs/figures/pso_parameter_sweep.jpg" width="500" alt="PSO hyperparameter grid search" />
+</p>
+<p align="center"><em>Figure 4 — PSO hyperparameter grid search results.</em></p>
+
+---
+
 ## Repository Structure
 
 ```
@@ -58,8 +82,8 @@ The system routes multiple heterogeneous EVs through a fork-shaped road network 
 │
 ├── scripts/
 │   ├── compare_all_algorithms.py  # Full 5-algorithm comparison
-│   ├── compare_pso_ga_sa.py       # PSO vs GA vs SA benchmark
 │   ├── run_case_studies.py        # Batch runner with JSON/Markdown export
+│   ├── run_metaheuristic_studies_parallel.py  # Parallel metaheuristic runs
 │   ├── run_parameter_sensitivity.py # Parameter sensitivity analysis
 │   ├── visualize_comparison.py    # Rich HTML comparison reports
 │   └── test_*.py                  # Validation scripts
@@ -79,7 +103,7 @@ The system routes multiple heterogeneous EVs through a fork-shaped road network 
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/EV-Fleet-Routing-Optimization.git
+git clone https://github.com/youssefrfarid/EV-Fleet-Routing-Optimization.git
 cd EV-Fleet-Routing-Optimization
 pip install -r requirements.txt
 ```
@@ -97,7 +121,6 @@ python algorithms/tlbo/teaching_learning_optimization.py  # TLBO demo
 
 ```bash
 python scripts/compare_all_algorithms.py         # Full 5-algorithm comparison
-python scripts/compare_pso_ga_sa.py              # PSO vs GA vs SA + figures
 python scripts/run_case_studies.py               # All scenarios → JSON + tables
 python scripts/run_parameter_sensitivity.py      # Sensitivity analysis
 ```
@@ -160,10 +183,10 @@ M → B
 
 | Name | Affiliation |
 |------|-------------|
-| **Andrew Khalil** | Mechatronics Engineering, GUC |
-| **Daniel Ashraf** | Mechatronics Engineering, GUC |
-| **Daniel George** | Mechatronics Engineering, GUC |
-| **David Louis** | Mechatronics Engineering, GUC |
+| **Andrew Abdelmalak** | Mechatronics Engineering, GUC |
+| **Daniel Ekdawi** | Mechatronics Engineering, GUC |
+| **Daniel Boules** | Mechatronics Engineering, GUC |
+| **David Girgis** | Mechatronics Engineering, GUC |
 | **Youssef Ramy** | Media Engineering Technology, GUC |
 
 ## Report
@@ -172,4 +195,4 @@ The full project report is available in [`docs/EV_Fleet_Routing_Optimization.pdf
 
 ## License
 
-GPL v3 — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).

@@ -16,7 +16,7 @@ import math
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 
@@ -294,9 +294,6 @@ def _generate_random_initial_plans(params: SingleForkParams, rng: random.Random 
         min_kwh = battery_cap * 0.10  # 10% reserve
         
         charging_amounts = {}
-        
-        # Identify charging stations on route
-        stations_on_route = [node for node in route if node in params.station_plugs]
         
         # Simple heuristic: check energy to reach next station/dest
         # If deficit, charge at current station

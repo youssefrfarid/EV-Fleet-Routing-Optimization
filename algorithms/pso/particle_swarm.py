@@ -403,7 +403,6 @@ def particle_swarm_optimization(
 
     global_best_cost = math.inf
     global_best_plans: List[VehiclePlan] = []
-    w0 = w  # Baseline inertia weight for adaptive updates
     w_current = w
 
     for particle in swarm:

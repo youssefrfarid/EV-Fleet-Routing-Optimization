@@ -13,7 +13,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 from multiprocessing import Pool, cpu_count
 
 # Make repository root importable
@@ -21,7 +21,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from common.case_studies import CaseStudy, get_case_study, list_case_studies
+from common.case_studies import get_case_study, list_case_studies
 from common.objectives import (
     FleetSolution,
     objective_makespan,

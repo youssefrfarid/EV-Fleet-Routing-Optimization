@@ -17,7 +17,6 @@ Features:
 
 import json
 from pathlib import Path
-from typing import Optional
 
 from common.objectives import FleetSolution
 from common.params import SingleForkParams
@@ -165,7 +164,7 @@ def generate_dashboard(
     try:
         webbrowser.open(f"file://{output_path.absolute()}")
         print("🌐 Opening in browser...")
-    except:
+    except Exception:
         pass
     
     return output_path
@@ -186,8 +185,6 @@ def _generate_soc_data(solution: FleetSolution, params: SingleForkParams):
             'soc': v_sol.soc_at_nodes['A'] * 100,
             'energy': v_sol.soc_at_nodes['A'] * capacity_kwh
         })
-        
-        current_time = v_sol.arrival_times['A']
         
         for i in range(len(v_sol.route) - 1):
             u, v = v_sol.route[i], v_sol.route[i+1]
@@ -217,9 +214,9 @@ def _generate_soc_data(solution: FleetSolution, params: SingleForkParams):
                     'energy': soc_after * capacity_kwh
                 })
                 
-                current_time = departure_time
+                pass
             else:
-                current_time = v_sol.departure_times[u]
+                pass
             
             # Arrival at next node v
             arrival_time_v = v_sol.arrival_times[v]

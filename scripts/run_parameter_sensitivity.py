@@ -12,8 +12,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Any
-from multiprocessing import Pool, cpu_count
+from typing import Dict
 
 # Make repository root importable
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

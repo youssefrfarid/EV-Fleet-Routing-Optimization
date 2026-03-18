@@ -1,0 +1,4 @@
+[lint.per-file-ignores]
+"algorithms/**" = ["E402"]
+"scripts/**" = ["E402"]
+"app.py" = ["E402"]
