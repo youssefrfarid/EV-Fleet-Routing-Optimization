@@ -4,7 +4,7 @@ This directory contains comprehensive documentation for the optimization algorit
 
 ## 📚 Documentation Files
 
-### 1. [Genetic Algorithm Documentation](file:///Users/yousseframy/Documents/optimization-project/GA_DOCUMENTATION.md)
+### 1. [Genetic Algorithm Documentation](../GA_DOCUMENTATION.md)
 
 Complete guide to the **Genetic Algorithm (GA)** implementation:
 - **Algorithm Concept**: Population-based evolutionary search
@@ -18,7 +18,7 @@ Complete guide to the **Genetic Algorithm (GA)** implementation:
 - 50.1% cost savings vs SA
 - Execution time: ~71 seconds
 
-### 2. [Simulated Annealing Documentation](file:///Users/yousseframy/Documents/optimization-project/SA_DOCUMENTATION.md)
+### 2. [Simulated Annealing Documentation](../SA_DOCUMENTATION.md)
 
 Complete guide to the **Simulated Annealing (SA)** implementation:
 - **Algorithm Concept**: Temperature-based probabilistic search
@@ -228,22 +228,20 @@ Run `python visualize_comparison.py` to see everything!
 ## 📝 Additional Resources
 
 - **Implementation Code**:
-  - [simulated_annealing.py](file:///Users/yousseframy/Documents/optimization-project/simulated_annealing.py) - SA algorithm
-  - [genetic_algorithm.py](file:///Users/yousseframy/Documents/optimization-project/genetic_algorithm.py) - GA algorithm
-  - [compare_ga_sa.py](file:///Users/yousseframy/Documents/optimization-project/compare_ga_sa.py) - Comparison script
+  - [`algorithms/sa/simulated_annealing.py`](../../algorithms/sa/simulated_annealing.py) - SA algorithm
+  - [`algorithms/ga/genetic_algorithm.py`](../../algorithms/ga/genetic_algorithm.py) - GA algorithm
   - `algorithms/pso/particle_swarm.py` - PSO algorithm
-  - `scripts/compare_pso_ga_sa.py` - Three-way benchmark
 
 - **Core Libraries**:
-  - [params.py](file:///Users/yousseframy/Documents/optimization-project/params.py) - Problem parameters
-  - [objectives.py](file:///Users/yousseframy/Documents/optimization-project/objectives.py) - Evaluation functions
-  - [visualization.py](file:///Users/yousseframy/Documents/optimization-project/visualization.py) - Dashboard generation
+  - [`common/params.py`](../../common/params.py) - Problem parameters
+  - [`common/objectives.py`](../../common/objectives.py) - Evaluation functions
+  - [`common/visualization.py`](../../common/visualization.py) - Dashboard generation
 
 ## 🎓 Learning Path
 
 **New to optimization?** Read in this order:
-1. Start with [SA_DOCUMENTATION.md](file:///Users/yousseframy/Documents/optimization-project/SA_DOCUMENTATION.md) - simpler concept
-2. Then read [GA_DOCUMENTATION.md](file:///Users/yousseframy/Documents/optimization-project/GA_DOCUMENTATION.md) - builds on SA
+1. Start with [SA_DOCUMENTATION.md](../SA_DOCUMENTATION.md) - simpler concept
+2. Then read [GA_DOCUMENTATION.md](../GA_DOCUMENTATION.md) - builds on SA
 3. Continue with `PSO_DOCUMENTATION.md` for the swarm-based approach
 4. Run `scripts/compare_pso_ga_sa.py` to see all three in action
 5. Experiment with parameters using the tuning guidelines

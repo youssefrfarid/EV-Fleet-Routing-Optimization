@@ -20,11 +20,10 @@ Reference:
 from __future__ import annotations
 
 import sys
-import math
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Callable, Optional
+from typing import Dict, List, Tuple, Callable, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,16 +36,13 @@ if str(PROJECT_ROOT) not in sys.path:
 from common.objectives import (
     FleetSolution,
     objective_weighted,
-    process_station_queues,
 )
-from common.params import SingleForkParams, DoubleForkParams, make_toy_params, make_double_fork_params
+from common.params import SingleForkParams, make_double_fork_params
 
 # Import reusable components from simulated annealing
 from algorithms.sa.simulated_annealing import (
     VehiclePlan,
     build_solution_from_plans,
-    plans_from_solution,
-    _generate_random_initial_plans,
     _ensure_speed_defaults,
     _ensure_station_exists,
 )
@@ -533,7 +529,7 @@ def tlbo(
                 print(f"  🌟 New best solution found: {best_fitness:.3f}")
     
     if verbose:
-        print(f"\n✅ TLBO completed")
+        print("\n✅ TLBO completed")
         print(f"Best fitness: {best_fitness:.3f}")
         print(f"Solution feasible: {best_solution.is_feasible()}")
     

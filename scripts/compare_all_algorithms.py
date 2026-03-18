@@ -18,7 +18,6 @@ from pathlib import Path
 from typing import Tuple, Dict
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 # Allow running via `python scripts/compare_all_algorithms.py`
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -110,41 +109,41 @@ def _generate_html_dashboard(
     best_cost_algo = min(metrics.keys(), key=lambda k: metrics[k][2])
     fastest_algo = min(runtimes.keys(), key=lambda k: runtimes[k])
     
-    html_content = f"""<!DOCTYPE html>
+    html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Comparison Dashboard</title>
     <style>
-        :root {{
+        :root {
             --sa-color: #e74c3c;
             --ga-color: #3498db;
             --pso-color: #2ecc71;
             --tlbo-color: #9b59b6;
             --rl-color: #f39c12;
-        }}
+        }
         
-        * {{
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }}
+        }
         
-        body {{
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
             min-height: 100vh;
             padding: 20px;
-        }}
+        }
         
-        .container {{
+        .container {
             max-width: 1400px;
             margin: 0 auto;
-        }}
+        }
         
-        h1 {{
+        h1 {
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
@@ -152,124 +151,124 @@ def _generate_html_dashboard(
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }}
+        }
         
-        .subtitle {{
+        .subtitle {
             text-align: center;
             color: #8892b0;
             margin-bottom: 40px;
             font-size: 1.1em;
-        }}
+        }
         
-        .algorithms-grid {{
+        .algorithms-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 20px;
             margin-bottom: 40px;
-        }}
+        }
         
-        .algo-card {{
+        .algo-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
             padding: 24px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }}
+        }
         
-        .algo-card:hover {{
+        .algo-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }}
+        }
         
-        .algo-card.sa {{ border-top: 4px solid var(--sa-color); }}
-        .algo-card.ga {{ border-top: 4px solid var(--ga-color); }}
-        .algo-card.pso {{ border-top: 4px solid var(--pso-color); }}
-        .algo-card.tlbo {{ border-top: 4px solid var(--tlbo-color); }}
-        .algo-card.rl {{ border-top: 4px solid var(--rl-color); }}
+        .algo-card.sa { border-top: 4px solid var(--sa-color); }
+        .algo-card.ga { border-top: 4px solid var(--ga-color); }
+        .algo-card.pso { border-top: 4px solid var(--pso-color); }
+        .algo-card.tlbo { border-top: 4px solid var(--tlbo-color); }
+        .algo-card.rl { border-top: 4px solid var(--rl-color); }
         
-        .algo-name {{
+        .algo-name {
             font-size: 1.4em;
             font-weight: 700;
             margin-bottom: 8px;
-        }}
+        }
         
-        .algo-card.sa .algo-name {{ color: var(--sa-color); }}
-        .algo-card.ga .algo-name {{ color: var(--ga-color); }}
-        .algo-card.pso .algo-name {{ color: var(--pso-color); }}
-        .algo-card.tlbo .algo-name {{ color: var(--tlbo-color); }}
-        .algo-card.rl .algo-name {{ color: var(--rl-color); }}
+        .algo-card.sa .algo-name { color: var(--sa-color); }
+        .algo-card.ga .algo-name { color: var(--ga-color); }
+        .algo-card.pso .algo-name { color: var(--pso-color); }
+        .algo-card.tlbo .algo-name { color: var(--tlbo-color); }
+        .algo-card.rl .algo-name { color: var(--rl-color); }
         
-        .algo-full-name {{
+        .algo-full-name {
             color: #8892b0;
             font-size: 0.85em;
             margin-bottom: 20px;
-        }}
+        }
         
-        .metric {{
+        .metric {
             display: flex;
             justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }}
+        }
         
-        .metric:last-child {{
+        .metric:last-child {
             border-bottom: none;
-        }}
+        }
         
-        .metric-label {{
+        .metric-label {
             color: #8892b0;
-        }}
+        }
         
-        .metric-value {{
+        .metric-value {
             font-weight: 600;
             font-size: 1.1em;
-        }}
+        }
         
-        .metric-value.best {{
+        .metric-value.best {
             color: #2ecc71;
-        }}
+        }
         
-        .comparison-table {{
+        .comparison-table {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
             padding: 30px;
             margin-bottom: 40px;
-        }}
+        }
         
-        .comparison-table h2 {{
+        .comparison-table h2 {
             margin-bottom: 20px;
             font-size: 1.5em;
-        }}
+        }
         
-        table {{
+        table {
             width: 100%;
             border-collapse: collapse;
-        }}
+        }
         
-        th, td {{
+        th, td {
             padding: 16px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }}
+        }
         
-        th {{
+        th {
             color: #8892b0;
             font-weight: 500;
             text-transform: uppercase;
             font-size: 0.85em;
             letter-spacing: 1px;
-        }}
+        }
         
-        td {{
+        td {
             font-size: 1.1em;
-        }}
+        }
         
-        tr:hover td {{
+        tr:hover td {
             background: rgba(255, 255, 255, 0.05);
-        }}
+        }
         
-        .winner-badge {{
+        .winner-badge {
             display: inline-block;
             background: linear-gradient(135deg, #2ecc71, #27ae60);
             color: #fff;
@@ -278,72 +277,72 @@ def _generate_html_dashboard(
             font-size: 0.75em;
             font-weight: 600;
             margin-left: 8px;
-        }}
+        }
         
-        .chart-container {{
+        .chart-container {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
             padding: 30px;
-        }}
+        }
         
-        .chart-container h2 {{
+        .chart-container h2 {
             margin-bottom: 20px;
             font-size: 1.5em;
-        }}
+        }
         
-        .bar-chart {{
+        .bar-chart {
             display: flex;
             align-items: flex-end;
             justify-content: space-around;
             height: 300px;
             padding: 20px;
-        }}
+        }
         
-        .bar-group {{
+        .bar-group {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 20%;
-        }}
+        }
         
-        .bar {{
+        .bar {
             width: 60px;
             border-radius: 8px 8px 0 0;
             transition: height 0.5s ease;
             position: relative;
-        }}
+        }
         
-        .bar.sa {{ background: linear-gradient(180deg, var(--sa-color), #c0392b); }}
-        .bar.ga {{ background: linear-gradient(180deg, var(--ga-color), #2980b9); }}
-        .bar.pso {{ background: linear-gradient(180deg, var(--pso-color), #27ae60); }}
-        .bar.tlbo {{ background: linear-gradient(180deg, var(--tlbo-color), #8e44ad); }}
-        .bar.rl {{ background: linear-gradient(180deg, var(--rl-color), #e67e22); }}
+        .bar.sa { background: linear-gradient(180deg, var(--sa-color), #c0392b); }
+        .bar.ga { background: linear-gradient(180deg, var(--ga-color), #2980b9); }
+        .bar.pso { background: linear-gradient(180deg, var(--pso-color), #27ae60); }
+        .bar.tlbo { background: linear-gradient(180deg, var(--tlbo-color), #8e44ad); }
+        .bar.rl { background: linear-gradient(180deg, var(--rl-color), #e67e22); }
         
-        .bar-label {{
+        .bar-label {
             margin-top: 10px;
             font-weight: 600;
-        }}
+        }
         
-        .bar-value {{
+        .bar-value {
             position: absolute;
             top: -25px;
             width: 100%;
             text-align: center;
             font-size: 0.85em;
             font-weight: 600;
-        }}
+        }
         
-        @media (max-width: 1000px) {{
-            .algorithms-grid {{
+        @media (max-width: 1000px) {
+            .algorithms-grid {
                 grid-template-columns: repeat(2, 1fr);
-            }}
-        }}
+            }
+        }
         
-        @media (max-width: 600px) {{
-            .algorithms-grid {{
+        @media (max-width: 600px) {
+            .algorithms-grid {
                 grid-template-columns: 1fr;
-            }}
-        }}
+            }
+        }
     </style>
 </head>
 <body>
@@ -437,7 +436,7 @@ def _generate_html_dashboard(
     max_weighted = max(weighted_values)
     bar_heights = [int((v / max_weighted) * 250) for v in weighted_values]
     
-    html_content += f"""
+    html_content += """
                 </tbody>
             </table>
         </div>

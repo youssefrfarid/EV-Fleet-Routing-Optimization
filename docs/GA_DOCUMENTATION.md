@@ -483,11 +483,9 @@ print(f"GA: {ga_result.best_fitness:.2f} in {ga_time:.2f}s")
 
 ## Implementation Files
 
-- **[genetic_algorithm.py](file:///Users/yousseframy/Documents/optimization-project/genetic_algorithm.py)** - Main GA implementation
-- **[compare_ga_sa.py](file:///Users/yousseframy/Documents/optimization-project/compare_ga_sa.py)** - Comparison script
-- **[visualize_comparison.py](file:///Users/yousseframy/Documents/optimization-project/visualize_comparison.py)** - Interactive visualization
-- **[objectives.py](file:///Users/yousseframy/Documents/optimization-project/objectives.py)** - Fitness evaluation and feasibility checks
-- **[params.py](file:///Users/yousseframy/Documents/optimization-project/params.py)** - Problem parameters
+- **[`algorithms/ga/genetic_algorithm.py`](../algorithms/ga/genetic_algorithm.py)** - Main GA implementation
+- **[`common/objectives.py`](../common/objectives.py)** - Fitness evaluation and feasibility checks
+- **[`common/params.py`](../common/params.py)** - Problem parameters
 
 ---
 

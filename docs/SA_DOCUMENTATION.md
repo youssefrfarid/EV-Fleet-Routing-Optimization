@@ -573,11 +573,9 @@ result = simulated_annealing(
 
 ## Implementation Files
 
-- **[simulated_annealing.py](file:///Users/yousseframy/Documents/optimization-project/simulated_annealing.py)** - Main SA implementation
-- **[compare_ga_sa.py](file:///Users/yousseframy/Documents/optimization-project/compare_ga_sa.py)** - Comparison with GA
-- **[visualize_comparison.py](file:///Users/yousseframy/Documents/optimization-project/visualize_comparison.py)** - Interactive visualization
-- **[objectives.py](file:///Users/yousseframy/Documents/optimization-project/objectives.py)** - Fitness evaluation
-- **[params.py](file:///Users/yousseframy/Documents/optimization-project/params.py)** - Problem parameters
+- **[`algorithms/sa/simulated_annealing.py`](../algorithms/sa/simulated_annealing.py)** - Main SA implementation
+- **[`common/objectives.py`](../common/objectives.py)** - Fitness evaluation
+- **[`common/params.py`](../common/params.py)** - Problem parameters
 
 ---
 

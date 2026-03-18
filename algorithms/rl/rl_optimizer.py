@@ -11,9 +11,8 @@ import sys
 import time
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional
 import numpy as np
-import random
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -22,7 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from common.params import DoubleForkParams, make_double_fork_params
 from common.objectives import FleetSolution, VehicleSolution, objective_weighted
 
-from algorithms.rl.ev_routing_env import EVRoutingEnv, SPEED_OPTIONS, SOC_TARGETS
+from algorithms.rl.ev_routing_env import EVRoutingEnv
 
 # Import custom RL repair (works with double-fork topology)
 from algorithms.rl.rl_repair import repair_rl_solution
@@ -30,7 +29,7 @@ from algorithms.rl.rl_repair import repair_rl_solution
 # Check PyTorch availability
 try:
     import torch
-    from algorithms.rl.dqn_agent import DQNAgent, train_dqn, evaluate_dqn
+    from algorithms.rl.dqn_agent import DQNAgent, train_dqn  # noqa: F401
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
@@ -160,7 +159,7 @@ def rl_optimization(
             feasible = solution.is_feasible()
             if not feasible:
                 if verbose:
-                    print(f"  Repairing infeasible DQN solution...")
+                    print("  Repairing infeasible DQN solution...")
                 solution = repair_rl_solution(solution, params)
                 feasible = solution.is_feasible()
             
@@ -195,7 +194,7 @@ def rl_optimization(
                 feasible = solution.is_feasible()
                 if not feasible:
                     if verbose:
-                        print(f"  Repairing infeasible expert solution...")
+                        print("  Repairing infeasible expert solution...")
                     solution = repair_rl_solution(solution, params)
                     feasible = solution.is_feasible()
                 
@@ -218,7 +217,7 @@ def rl_optimization(
     success_rate = np.mean(history.get('success_rate', [0])[-100:]) if history.get('success_rate') else 0.0
     
     if verbose:
-        print(f"\n✅ RL Optimization completed")
+        print("\n✅ RL Optimization completed")
         print(f"Best fitness: {best_fitness:.3f}")
         print(f"Training time: {training_time:.1f}s")
         print(f"Inference time: {inference_time:.3f}s")

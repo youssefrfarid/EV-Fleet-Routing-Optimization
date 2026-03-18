@@ -17,11 +17,10 @@ the simulated annealing implementation for consistency.
 from __future__ import annotations
 
 import sys
-import math
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Callable, Optional
+from typing import List, Tuple, Callable, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,22 +33,19 @@ if str(PROJECT_ROOT) not in sys.path:
 from common.objectives import (
     FleetSolution,
     objective_weighted,
-    process_station_queues,
 )
-from common.params import SingleForkParams, DoubleForkParams, make_toy_params, make_double_fork_params
+from common.params import SingleForkParams, make_toy_params, make_double_fork_params
 
 # Import reusable components from simulated annealing
 from algorithms.sa.simulated_annealing import (
     VehiclePlan,
     build_solution_from_plans,
-    plans_from_solution,
     _generate_random_initial_plans,
     _mutate_speed_step,
     _mutate_speed_random,
     _mutate_charge_step,
     _mutate_charge_random,
     _mutate_route_toggle,
-    _mutate_route_shuffle,
     _mutate_station_add,
     _mutate_station_remove,
     _ensure_speed_defaults,
@@ -652,7 +648,7 @@ def genetic_algorithm(
                 print(f"  🌟 New best solution found: {best_fitness:.3f}")
     
     if verbose:
-        print(f"\n✅ Genetic Algorithm completed")
+        print("\n✅ Genetic Algorithm completed")
         print(f"Best fitness: {best_fitness:.3f}")
         print(f"Solution feasible: {best_solution.is_feasible()}")
     

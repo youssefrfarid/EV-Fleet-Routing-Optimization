@@ -46,7 +46,7 @@ def test_realistic_values():
     upper_energy = sum(params.edges_energy_kwh[e] for e in upper_edges)
     upper_time = sum(params.edges_time_min[e] for e in upper_edges)
 
-    print(f"\nUpper Route (A→J→S1→S2→M→B):")
+    print("\nUpper Route (A→J→S1→S2→M→B):")
     print(f"{'Edge':<12} {'Distance':<12} {'Time':<12} {'Energy':<12}")
     print("-" * 60)
     for edge in upper_edges:
@@ -63,7 +63,7 @@ def test_realistic_values():
     lower_energy = sum(params.edges_energy_kwh[e] for e in lower_edges)
     lower_time = sum(params.edges_time_min[e] for e in lower_edges)
 
-    print(f"\nLower Route (A→J→S3→M→B):")
+    print("\nLower Route (A→J→S3→M→B):")
     print(f"{'Edge':<12} {'Distance':<12} {'Time':<12} {'Energy':<12}")
     print("-" * 60)
     for edge in lower_edges:
@@ -105,7 +105,7 @@ def test_realistic_values():
     print(f"\nVehicle 1 ({v1_battery:.0f} kWh, {v1_soc*100:.0f}% SOC, {v1_start:.1f} kWh available):")
     print(f"  Upper route needs: {upper_energy:.1f} kWh total")
     print(f"  Must charge: {v1_need_upper:.1f} kWh minimum")
-    print(f"\n  Charging cost scenarios:")
+    print("\n  Charging cost scenarios:")
     print(f"    Budget (S1 only, 13 EGP/kWh):   {v1_need_upper * 13:.2f} EGP")
     print(f"    Standard (S3 only, 20 EGP/kWh): {v1_need_upper * 20:.2f} EGP")
     print(f"    Premium (S2 only, 27 EGP/kWh):  {v1_need_upper * 27:.2f} EGP")
@@ -113,7 +113,7 @@ def test_realistic_values():
     # Compare to gas cost
     distance_upper = upper_energy / 0.17  # ~220 km
     gas_cost = distance_upper * 1.81
-    print(f"\n  Comparison to ICE vehicle:")
+    print("\n  Comparison to ICE vehicle:")
     print(f"    Gas cost for ~220 km trip: {gas_cost:.2f} EGP")
     print(f"    EV charging (budget):      {v1_need_upper * 13:.2f} EGP")
     print(
@@ -128,21 +128,21 @@ def test_realistic_values():
     print(f"\nVehicle 5 ({v5_battery:.0f} kWh, {v5_soc*100:.0f}% SOC, {v5_start:.1f} kWh available):")
     print(f"  Upper route needs: {upper_energy:.1f} kWh total")
     print(f"  Must charge: {v5_need_upper:.1f} kWh minimum")
-    print(f"\n  Charging cost scenarios:")
+    print("\n  Charging cost scenarios:")
     print(f"    Budget (S1 only, 13 EGP/kWh):   {v5_need_upper * 13:.2f} EGP")
     print(f"    Standard (S3 only, 20 EGP/kWh): {v5_need_upper * 20:.2f} EGP")
     print(f"    Premium (S2 only, 27 EGP/kWh):  {v5_need_upper * 27:.2f} EGP")
 
     print("\n📈 KEY INSIGHTS")
     print("-" * 80)
-    print(f"✓ Trip distance: ~220 km (realistic Cairo-Alexandria)")
+    print("✓ Trip distance: ~220 km (realistic Cairo-Alexandria)")
     print(
         f"✓ Energy consumption: {upper_energy:.1f} kWh (upper) or {lower_energy:.1f} kWh (lower)")
     print(
         f"✓ Battery usage: {upper_energy/80*100:.0f}% for 80kWh vehicle (forces charging!)")
-    print(f"✓ Charging prices: 13-27 EGP/kWh (based on Gas 95 @ 21.75 EGP/L)")
-    print(f"✓ All vehicles MUST charge during trip (realistic constraint)")
-    print(f"✓ 10% SOC safety reserve enforced at every stop")
+    print("✓ Charging prices: 13-27 EGP/kWh (based on Gas 95 @ 21.75 EGP/L)")
+    print("✓ All vehicles MUST charge during trip (realistic constraint)")
+    print("✓ 10% SOC safety reserve enforced at every stop")
     print(
         f"✓ Cost difference: Budget vs Premium = {(27-13)/13*100:.0f}% more expensive!")
     print(
@@ -180,8 +180,8 @@ print(f'  Travel time: {lower_time:.0f} minutes ({lower_time/60:.1f} hours)')
 print(f'  Energy needed: {lower_energy:.1f} kWh (hilly S3→M segment dominates)')
 
 print('\n💰 CHARGING STATION PRICES (realistic Egyptian market):')
-print(f'Based on Gas 95 @ 21.75 EGP/liter')
-print(f'ICE cost: ~1.81 EGP/km → EV equivalent: ~10.88 EGP/kWh')
+print('Based on Gas 95 @ 21.75 EGP/liter')
+print('ICE cost: ~1.81 EGP/km → EV equivalent: ~10.88 EGP/kWh')
 print()
 for station, price in params.station_price.items():
     power = params.station_max_kw[station]
@@ -225,12 +225,12 @@ for i in range(params.m):
         print()
 
 print('\n💡 CHARGING COST EXAMPLES:')
-print(f'Charging 20 kWh at each station:')
+print('Charging 20 kWh at each station:')
 for station, price in params.station_price.items():
     cost = 20 * price
     print(f'  {station}: {cost:.2f} EGP')
 
-print(f'\nFull charge (0% → 100%) for each vehicle at S1 (cheapest):')
+print('\nFull charge (0% → 100%) for each vehicle at S1 (cheapest):')
 for i in range(params.m):
     battery = params.battery_kwh[i]
     cost = battery * params.station_price['S1']
