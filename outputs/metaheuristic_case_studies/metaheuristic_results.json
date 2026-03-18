@@ -1,0 +1,252 @@
+{
+  "single_small": {
+    "metadata": {
+      "name": "Single Fork \u2013 Small Fleet",
+      "description": "3 vehicles on single-fork topology for baseline comparison.",
+      "topology": "single",
+      "inputs": {
+        "vehicles": "3 EVs (40, 60, 80 kWh)",
+        "stations": "S1, S2, S3",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 757.2299074290099,
+        "makespan": 304.17990742901003,
+        "cost": 453.04999999999995,
+        "queue_time": 0.0,
+        "charging_time": 44.13138108428967,
+        "energy_kwh": 34.85,
+        "runtime": 39.80318999290466
+      },
+      "GA": {
+        "weighted": 291.55047112276577,
+        "makespan": 271.55047112276577,
+        "cost": 20.0,
+        "queue_time": 0.0,
+        "charging_time": 0.6331618519984232,
+        "energy_kwh": 1.0,
+        "runtime": 98.4728901386261
+      },
+      "PSO": {
+        "weighted": 274.253967751103,
+        "makespan": 274.253967751103,
+        "cost": 0.0,
+        "queue_time": 0.0,
+        "charging_time": 0.0,
+        "energy_kwh": 0.0,
+        "runtime": 86.05487322807312
+      },
+      "TLBO": {
+        "weighted": 363.5674366606004,
+        "makespan": 285.35452960179646,
+        "cost": 78.21290705880394,
+        "queue_time": 0.0,
+        "charging_time": 3.9258122228023713,
+        "energy_kwh": 4.504267215352712,
+        "runtime": 179.12297940254211
+      }
+    }
+  },
+  "single_large": {
+    "metadata": {
+      "name": "Single Fork \u2013 Large Fleet",
+      "description": "7 vehicles on single-fork to test scalability.",
+      "topology": "single",
+      "inputs": {
+        "vehicles": "7 EVs (40-95 kWh)",
+        "stations": "S1, S2, S3 with standard capacity",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 1027.2718283923712,
+        "makespan": 314.50182839237107,
+        "cost": 712.7700000000001,
+        "queue_time": 5.674042457975133,
+        "charging_time": 68.11555203798967,
+        "energy_kwh": 54.29,
+        "runtime": 47.31831908226013
+      },
+      "GA": {
+        "weighted": 330.6747514420148,
+        "makespan": 290.6747514420148,
+        "cost": 40.0,
+        "queue_time": 0.0,
+        "charging_time": 1.2663237039968323,
+        "energy_kwh": 2.0,
+        "runtime": 158.67894220352173
+      },
+      "PSO": {
+        "weighted": 524.5728933751789,
+        "makespan": 301.6166101992945,
+        "cost": 222.95628317588444,
+        "queue_time": 0.0,
+        "charging_time": 7.058370658516324,
+        "energy_kwh": 11.147814158794223,
+        "runtime": 207.72946453094482
+      },
+      "TLBO": {
+        "weighted": 524.5728933751789,
+        "makespan": 301.6166101992945,
+        "cost": 222.95628317588444,
+        "queue_time": 0.0,
+        "charging_time": 7.058370658516324,
+        "energy_kwh": 11.147814158794223,
+        "runtime": 223.40256595611572
+      }
+    }
+  },
+  "double_sparse": {
+    "metadata": {
+      "name": "Double Fork \u2013 Sparse Network",
+      "description": "4 vehicles with minimal station capacity.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "4 EVs (45-75 kWh)",
+        "stations": "All stations with 1 plug only",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 2559.693786348064,
+        "makespan": 548.2637863480637,
+        "cost": 2011.43,
+        "queue_time": 82.53796632815525,
+        "charging_time": 144.15829046299964,
+        "energy_kwh": 138.89,
+        "runtime": 110.99242091178894
+      },
+      "GA": {
+        "weighted": 1755.2240056562184,
+        "makespan": 475.62094553879416,
+        "cost": 1279.6030601174243,
+        "queue_time": 20.4702987491722,
+        "charging_time": 40.5097921683395,
+        "energy_kwh": 63.980153005871216,
+        "runtime": 124.96304130554199
+      },
+      "PSO": {
+        "weighted": 1558.2199203358186,
+        "makespan": 523.0179203358186,
+        "cost": 1035.202,
+        "queue_time": 2.5929277569733813,
+        "charging_time": 56.984091808468534,
+        "energy_kwh": 61.733999999999995,
+        "runtime": 185.67445373535156
+      },
+      "TLBO": {
+        "weighted": 2299.589872753647,
+        "makespan": 490.7948663717664,
+        "cost": 1808.7950063818807,
+        "queue_time": 29.665146781722314,
+        "charging_time": 90.85426993800388,
+        "energy_kwh": 104.19078185593608,
+        "runtime": 312.18050360679626
+      }
+    }
+  },
+  "double_balanced": {
+    "metadata": {
+      "name": "Double Fork \u2013 Balanced Fleet",
+      "description": "5 vehicles with mixed battery capacities and moderate pricing.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "5 EVs (40-80 kWh)",
+        "stations": "Standard capacity, moderate pricing",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 2925.2277072719885,
+        "makespan": 495.8077072719883,
+        "cost": 2429.42,
+        "queue_time": 24.55433141923126,
+        "charging_time": 152.36859778966743,
+        "energy_kwh": 158.62,
+        "runtime": 115.54109573364258
+      },
+      "GA": {
+        "weighted": 2089.1135231450617,
+        "makespan": 493.3335231450618,
+        "cost": 1595.7799999999997,
+        "queue_time": 17.346659802679596,
+        "charging_time": 101.51483973090622,
+        "energy_kwh": 100.67,
+        "runtime": 225.43079566955566
+      },
+      "PSO": {
+        "weighted": 1856.1451650477197,
+        "makespan": 515.9901650477196,
+        "cost": 1340.155,
+        "queue_time": 8.131934516128013,
+        "charging_time": 68.22429758607042,
+        "energy_kwh": 77.64,
+        "runtime": 212.4245102405548
+      },
+      "TLBO": {
+        "weighted": 2742.3512882889577,
+        "makespan": 492.92795385648566,
+        "cost": 2249.423334432472,
+        "queue_time": 26.117498989025677,
+        "charging_time": 125.47328463380364,
+        "energy_kwh": 134.6848030918576,
+        "runtime": 445.23410153388977
+      }
+    }
+  },
+  "double_premium": {
+    "metadata": {
+      "name": "Double Fork \u2013 Premium Charging",
+      "description": "4 vehicles with expensive fast charging options.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "4 EVs (55-85 kWh)",
+        "stations": "+25% pricing, 2 plugs at fast stations",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 2803.7500037947702,
+        "makespan": 502.77500379477016,
+        "cost": 2300.975,
+        "queue_time": 6.713138113310805,
+        "charging_time": 134.94838411330838,
+        "energy_kwh": 126.39,
+        "runtime": 62.18760681152344
+      },
+      "GA": {
+        "weighted": 1919.8980160522242,
+        "makespan": 469.89801605222414,
+        "cost": 1450.0,
+        "queue_time": 7.00341413215105,
+        "charging_time": 36.723387415908206,
+        "energy_kwh": 58.0,
+        "runtime": 115.10126209259033
+      },
+      "PSO": {
+        "weighted": 1254.5308360705997,
+        "makespan": 513.2933360705997,
+        "cost": 741.2375,
+        "queue_time": 10.637571038334642,
+        "charging_time": 19.467669172932318,
+        "energy_kwh": 29.962999999999997,
+        "runtime": 185.26237511634827
+      },
+      "TLBO": {
+        "weighted": 2453.3378069541695,
+        "makespan": 472.76876295386967,
+        "cost": 1980.5690440003,
+        "queue_time": 13.67027906003348,
+        "charging_time": 79.07489921361801,
+        "energy_kwh": 91.06213584514057,
+        "runtime": 257.5733833312988
+      }
+    }
+  }
+}

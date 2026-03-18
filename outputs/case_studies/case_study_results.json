@@ -1,0 +1,179 @@
+{
+  "double_baseline": {
+    "metadata": {
+      "name": "Double Fork \u2013 Baseline",
+      "description": "Standard 3-vehicle double-fork instance with default settings.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "3 EVs (50, 60, 70 kWh)",
+        "stations": "6 stations (S1-S6) with standard pricing",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 2885.0048521825865,
+        "makespan": 497.0548521825865,
+        "cost": 2387.9500000000003,
+        "queue_time": 17.692446218521127,
+        "charging_time": 136.16622452127504,
+        "energy_kwh": 150.08,
+        "runtime": 133.88627004623413
+      },
+      "GA": {
+        "weighted": 1805.748596600199,
+        "makespan": 475.5064314744011,
+        "cost": 1330.242165125798,
+        "queue_time": 2.6442051939408486,
+        "charging_time": 42.11292964387171,
+        "energy_kwh": 66.5121082562899,
+        "runtime": 304.9351966381073
+      },
+      "PSO": {
+        "weighted": 1483.5857568645188,
+        "makespan": 520.7127568645186,
+        "cost": 962.873,
+        "queue_time": 16.591611902923773,
+        "charging_time": 50.00174119509293,
+        "energy_kwh": 56.234,
+        "runtime": 166.61256074905396
+      },
+      "TLBO": {
+        "weighted": 2386.7347385138955,
+        "makespan": 486.09483475631737,
+        "cost": 1900.6399037575782,
+        "queue_time": 39.66256334014878,
+        "charging_time": 86.17974593979338,
+        "energy_kwh": 105.63446391609565,
+        "runtime": 353.59074211120605
+      },
+      "RL": {
+        "weighted": 4697.862395833334,
+        "makespan": 473.1423958333333,
+        "cost": 4224.72,
+        "queue_time": 46.964780371982584,
+        "charging_time": 235.202469358766,
+        "energy_kwh": 248.76500000000004,
+        "runtime": 223.30639624595642
+      }
+    }
+  },
+  "double_congested": {
+    "metadata": {
+      "name": "Double Fork \u2013 Congested Grid",
+      "description": "6 vehicles with reduced charging plugs to force queues.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "6 EVs (40\u201385 kWh), tighter SOC range",
+        "station_plugs": "All plugs reduced by one (min 1)",
+        "objective_weights": "w_time=1.0, w_cost=1.0"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 3495.0841755706506,
+        "makespan": 551.5341755706506,
+        "cost": 2943.55,
+        "queue_time": 100.30645728197175,
+        "charging_time": 152.27542540561927,
+        "energy_kwh": 179.95000000000002,
+        "runtime": 86.20005774497986
+      },
+      "GA": {
+        "weighted": 2321.8975265024897,
+        "makespan": 487.2404456823248,
+        "cost": 1834.657080820165,
+        "queue_time": 51.393600446386245,
+        "charging_time": 58.24562754027983,
+        "energy_kwh": 91.73285404100825,
+        "runtime": 198.459956407547
+      },
+      "PSO": {
+        "weighted": 3447.8653490916095,
+        "makespan": 562.4635839627974,
+        "cost": 2885.4017651288123,
+        "queue_time": 142.95853144482084,
+        "charging_time": 180.18071035994927,
+        "energy_kwh": 180.54275363087746,
+        "runtime": 230.5488202571869
+      },
+      "TLBO": {
+        "weighted": 3150.9134363399503,
+        "makespan": 500.8159844338773,
+        "cost": 2650.097451906073,
+        "queue_time": 77.90664495846175,
+        "charging_time": 114.83235325073217,
+        "energy_kwh": 150.063968087054,
+        "runtime": 795.9552743434906
+      },
+      "RL": {
+        "weighted": 5868.0623958333335,
+        "makespan": 468.16239583333333,
+        "cost": 5399.900000000001,
+        "queue_time": 188.99601503759405,
+        "charging_time": 274.5699246777035,
+        "energy_kwh": 308.595,
+        "runtime": 219.63268494606018
+      }
+    }
+  },
+  "double_high_demand": {
+    "metadata": {
+      "name": "Double Fork \u2013 High Demand & Pricing",
+      "description": "7 vehicles with increased public charging tariffs.",
+      "topology": "double",
+      "inputs": {
+        "vehicles": "7 EVs up to 95 kWh",
+        "pricing": "+15% multiplier on station prices",
+        "plugs": "Fast stations S2/S5 upgraded to 2 plugs"
+      }
+    },
+    "metrics": {
+      "SA": {
+        "weighted": 4657.308954205864,
+        "makespan": 505.49845420586473,
+        "cost": 4151.8105,
+        "queue_time": 59.01490797329811,
+        "charging_time": 212.54687211464852,
+        "energy_kwh": 228.17,
+        "runtime": 73.11612582206726
+      },
+      "GA": {
+        "weighted": 2851.2911822908677,
+        "makespan": 486.69105507755893,
+        "cost": 2364.600127213309,
+        "queue_time": 32.978976453940774,
+        "charging_time": 92.67792714408381,
+        "energy_kwh": 114.10320118318734,
+        "runtime": 204.82529425621033
+      },
+      "PSO": {
+        "weighted": 4072.969589797429,
+        "makespan": 502.9454230521227,
+        "cost": 3570.024166745306,
+        "queue_time": 80.33541908515265,
+        "charging_time": 158.30944623243207,
+        "energy_kwh": 178.1939022605155,
+        "runtime": 248.35620498657227
+      },
+      "TLBO": {
+        "weighted": 3644.4614612201926,
+        "makespan": 495.7204027048069,
+        "cost": 3148.7410585153857,
+        "queue_time": 59.58575890086881,
+        "charging_time": 142.7634227447345,
+        "energy_kwh": 158.45787341493738,
+        "runtime": 559.5137331485748
+      },
+      "RL": {
+        "weighted": 7563.901114583333,
+        "makespan": 482.09833333333336,
+        "cost": 7081.8027812499995,
+        "queue_time": 149.43886030866642,
+        "charging_time": 357.49011934257226,
+        "energy_kwh": 370.544375,
+        "runtime": 279.89131355285645
+      }
+    }
+  }
+}

@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Fleet Dashboard - Genetic Algorithm</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .algorithm-badge {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        #networkCanvas {
+            border: 2px solid #ddd;
+            border-radius: 8px 8px 0 0;
+            background: #f9f9f9;
+            display: block;
+            margin: 0 auto;
+        }
+        #timelineCanvas {
+            border: 2px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            background: white;
+            display: block;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+        #timelineCanvas:hover {
+            background: #f5f5f5;
+        }
+        .timeline-legend {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        .animation-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .control-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        .control-btn:hover { background: #5568d3; }
+        #timeDisplay {
+            font-weight: bold;
+            color: #667eea;
+            margin-left: auto;
+        }
+        .vehicle-legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .legend-vehicle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .legend-vehicle-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid black;
+        }
+        .network-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .edge-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .edge-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .edge-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label { color: #666; }
+        .info-value { font-weight: 600; color: #333; }
+        .vehicles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .vehicle-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .vehicle-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+        }
+        .vehicle-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+        .vehicle-detail {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .detail-label { font-weight: 500; color: #666; }
+        .detail-value { font-weight: bold; color: #333; }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .info-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-table tbody tr:hover { background: #f5f5f5; }
+        .speed-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        .speed-table th {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+        .speed-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .speed-value { font-weight: bold; color: #667eea; }
+        .speed-range { font-size: 0.85em; color: #999; }
+        .vehicle-section {
+            margin: 15px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .vehicle-section strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+        .timeline { margin-top: 20px; }
+        .timeline-row { margin-bottom: 15px; }
+        .timeline-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .timeline-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .timeline-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+            font-weight: 500;
+            border-right: 1px solid white;
+        }
+        .timeline-segment:hover {
+            filter: brightness(1.2);
+            cursor: pointer;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 EV Fleet Optimization Dashboard</h1>
+        <div class="algorithm-badge">Genetic Algorithm</div>
+        
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Vehicles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">476.4 min</div>
+                <div class="stat-label">Makespan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">1264.80 EGP</div>
+                <div class="stat-label">Total Cost</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">40.0 min</div>
+                <div class="stat-label">Charging Time</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">✅ Feasible</div>
+                <div class="stat-label">Status</div>
+            </div>
+        </div>
+        
+        <!-- Animated Network Map with Integrated Timeline -->
+        <div class="section">
+            <div class="section-title">🗺️ Network Animation & Timeline</div>
+            <div class="animation-controls">
+                <button id="playBtn" class="control-btn">▶ Play</button>
+                <button id="pauseBtn" class="control-btn">⏸ Pause</button>
+                <button id="resetBtn" class="control-btn">↺ Reset</button>
+                <label>Speed: <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1"></label>
+                <span id="timeDisplay">Time: 0.0 min / 476.4 min</span>
+            </div>
+            <canvas id="networkCanvas" width="900" height="400"></canvas>
+            <canvas id="timelineCanvas" width="900" height="200"></canvas>
+            <div class="timeline-legend">
+                <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div><span>Traveling</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#EF5350"></div><span>Charging</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#666; width:2px;"></div><span>Current Time</span></div>
+            </div>
+            <div class="vehicle-legend" id="vehicleLegend"></div>
+        </div>
+
+        <!-- SOC Chart -->
+        <div class="section">
+            <div class="section-title">🔋 State of Charge (SOC) vs Time</div>
+            <div style="height: 400px;">
+                <canvas id="socChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Energy Chart -->
+        <div class="section">
+            <div class="section-title">⚡ Energy Level (kWh) vs Time</div>
+            <div style="height: 400px;">
+                <canvas id="energyChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Network Edges -->
+        <div class="section">
+            <div class="section-title">📍 Network Edges & Speed Limits</div>
+            <div class="network-info"><div class="edge-card">
+            <div class="edge-name">A→J1</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">40.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">30.0-70.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">30.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">13.4 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">J1→S1</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">60.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">45.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">18.4 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S1→S2</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">46.7 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">35.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">13.9 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S2→M1</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">42.7 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">32.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">13.9 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">J1→S3</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">50.7 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">50.0-90.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">38.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">16.2 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S3→M1</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">64.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">40.0-80.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">48.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">24.5 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">M1→J2</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">26.7 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">40.0-90.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">20.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">8.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">J2→S4</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">53.3 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">40.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">16.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S4→S5</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">40.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">30.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">12.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S5→M2</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">46.7 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">60.0-120.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">35.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">14.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">J2→S6</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">60.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">50.0-90.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">45.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">18.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">S6→M2</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">56.0 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">40.0-80.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">42.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">20.0 kWh</span></div>
+            </div>
+        </div>
+<div class="edge-card">
+            <div class="edge-name">M2→B</div>
+            <div class="edge-info">
+                <div class="info-item"><span class="info-label">Distance:</span><span class="info-value">53.3 km</span></div>
+                <div class="info-item"><span class="info-label">Speed Range:</span><span class="info-value">40.0-80.0 km/h</span></div>
+                <div class="info-item"><span class="info-label">Base Time:</span><span class="info-value">40.0 min</span></div>
+                <div class="info-item"><span class="info-label">Base Energy:</span><span class="info-value">17.3 kWh</span></div>
+            </div>
+        </div></div>
+        </div>
+        
+        <!-- Vehicles -->
+        <div class="section">
+            <div class="section-title">🚙 Vehicle Details</div>
+            <div class="vehicles-grid">
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <span>Vehicle 1</span>
+                    <span class="vehicle-badge" style="background: #FF6B6B">476.4 min</span>
+                </div>
+                
+                <!-- Starting Data -->
+                <div class="vehicle-section">
+                    <strong>📊 Starting Conditions:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Battery Capacity:</span>
+                        <span class="detail-value">40.0 kWh</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Initial Charge:</span>
+                        <span class="detail-value">75% (30.0 kWh)</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Departure Time:</span>
+                        <span class="detail-value">0.0 min</span>
+                    </div>
+                </div>
+                
+                <!-- Journey Summary -->
+                <div class="vehicle-section">
+                    <strong>🗺️ Journey:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Route:</span>
+                        <span class="detail-value">A → J1 → S3 → M1 → J2 → S6 → M2 → B</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">270.40 EGP</span>
+                    </div>
+                </div>
+                
+                <!-- Charging Details -->
+                <div class="vehicle-section">
+                    <strong>⚡ Charging:</strong>
+                    <div class="vehicle-detail">
+                <span class="detail-label">S3:</span>
+                <span class="detail-value">13.5 kWh (×20.0 = 270.40 EGP)</span>
+            </div>
+                </div>
+                
+                <!-- Speed Choices -->
+                <div class="vehicle-section">
+                    <strong>🏎️ Speed Choices:</strong>
+                    <table class="speed-table">
+                        <thead><tr><th>Edge</th><th>Speed</th><th>Allowed</th></tr></thead>
+                        <tbody><tr>
+                <td>A→J1</td>
+                <td class="speed-value">33 km/h</td>
+                <td class="speed-range">[30-70]</td>
+            </tr>
+<tr>
+                <td>J1→S3</td>
+                <td class="speed-value">55 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S3→M1</td>
+                <td class="speed-value">42 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M1→J2</td>
+                <td class="speed-value">50 km/h</td>
+                <td class="speed-range">[40-90]</td>
+            </tr>
+<tr>
+                <td>J2→S6</td>
+                <td class="speed-value">55 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S6→M2</td>
+                <td class="speed-value">40 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M2→B</td>
+                <td class="speed-value">47 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        
+
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <span>Vehicle 2</span>
+                    <span class="vehicle-badge" style="background: #4ECDC4">474.1 min</span>
+                </div>
+                
+                <!-- Starting Data -->
+                <div class="vehicle-section">
+                    <strong>📊 Starting Conditions:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Battery Capacity:</span>
+                        <span class="detail-value">55.0 kWh</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Initial Charge:</span>
+                        <span class="detail-value">60% (33.0 kWh)</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Departure Time:</span>
+                        <span class="detail-value">0.0 min</span>
+                    </div>
+                </div>
+                
+                <!-- Journey Summary -->
+                <div class="vehicle-section">
+                    <strong>🗺️ Journey:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Route:</span>
+                        <span class="detail-value">A → J1 → S3 → M1 → J2 → S6 → M2 → B</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">288.00 EGP</span>
+                    </div>
+                </div>
+                
+                <!-- Charging Details -->
+                <div class="vehicle-section">
+                    <strong>⚡ Charging:</strong>
+                    <div class="vehicle-detail">
+                <span class="detail-label">S3:</span>
+                <span class="detail-value">14.4 kWh (×20.0 = 288.00 EGP)</span>
+            </div>
+                </div>
+                
+                <!-- Speed Choices -->
+                <div class="vehicle-section">
+                    <strong>🏎️ Speed Choices:</strong>
+                    <table class="speed-table">
+                        <thead><tr><th>Edge</th><th>Speed</th><th>Allowed</th></tr></thead>
+                        <tbody><tr>
+                <td>A→J1</td>
+                <td class="speed-value">30 km/h</td>
+                <td class="speed-range">[30-70]</td>
+            </tr>
+<tr>
+                <td>J1→S3</td>
+                <td class="speed-value">50 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S3→M1</td>
+                <td class="speed-value">45 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M1→J2</td>
+                <td class="speed-value">40 km/h</td>
+                <td class="speed-range">[40-90]</td>
+            </tr>
+<tr>
+                <td>J2→S6</td>
+                <td class="speed-value">57 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S6→M2</td>
+                <td class="speed-value">50 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M2→B</td>
+                <td class="speed-value">50 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        
+
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <span>Vehicle 3</span>
+                    <span class="vehicle-badge" style="background: #45B7D1">474.4 min</span>
+                </div>
+                
+                <!-- Starting Data -->
+                <div class="vehicle-section">
+                    <strong>📊 Starting Conditions:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Battery Capacity:</span>
+                        <span class="detail-value">62.0 kWh</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Initial Charge:</span>
+                        <span class="detail-value">58% (36.0 kWh)</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Departure Time:</span>
+                        <span class="detail-value">0.0 min</span>
+                    </div>
+                </div>
+                
+                <!-- Journey Summary -->
+                <div class="vehicle-section">
+                    <strong>🗺️ Journey:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Route:</span>
+                        <span class="detail-value">A → J1 → S3 → M1 → J2 → S6 → M2 → B</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">243.80 EGP</span>
+                    </div>
+                </div>
+                
+                <!-- Charging Details -->
+                <div class="vehicle-section">
+                    <strong>⚡ Charging:</strong>
+                    <div class="vehicle-detail">
+                <span class="detail-label">S3:</span>
+                <span class="detail-value">12.2 kWh (×20.0 = 243.80 EGP)</span>
+            </div>
+                </div>
+                
+                <!-- Speed Choices -->
+                <div class="vehicle-section">
+                    <strong>🏎️ Speed Choices:</strong>
+                    <table class="speed-table">
+                        <thead><tr><th>Edge</th><th>Speed</th><th>Allowed</th></tr></thead>
+                        <tbody><tr>
+                <td>A→J1</td>
+                <td class="speed-value">32 km/h</td>
+                <td class="speed-range">[30-70]</td>
+            </tr>
+<tr>
+                <td>J1→S3</td>
+                <td class="speed-value">52 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S3→M1</td>
+                <td class="speed-value">43 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M1→J2</td>
+                <td class="speed-value">41 km/h</td>
+                <td class="speed-range">[40-90]</td>
+            </tr>
+<tr>
+                <td>J2→S6</td>
+                <td class="speed-value">65 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S6→M2</td>
+                <td class="speed-value">45 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M2→B</td>
+                <td class="speed-value">45 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        
+
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <span>Vehicle 4</span>
+                    <span class="vehicle-badge" style="background: #FFA07A">451.8 min</span>
+                </div>
+                
+                <!-- Starting Data -->
+                <div class="vehicle-section">
+                    <strong>📊 Starting Conditions:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Battery Capacity:</span>
+                        <span class="detail-value">75.0 kWh</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Initial Charge:</span>
+                        <span class="detail-value">52% (39.0 kWh)</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Departure Time:</span>
+                        <span class="detail-value">0.0 min</span>
+                    </div>
+                </div>
+                
+                <!-- Journey Summary -->
+                <div class="vehicle-section">
+                    <strong>🗺️ Journey:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Route:</span>
+                        <span class="detail-value">A → J1 → S3 → M1 → J2 → S6 → M2 → B</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">241.60 EGP</span>
+                    </div>
+                </div>
+                
+                <!-- Charging Details -->
+                <div class="vehicle-section">
+                    <strong>⚡ Charging:</strong>
+                    <div class="vehicle-detail">
+                <span class="detail-label">S3:</span>
+                <span class="detail-value">12.1 kWh (×20.0 = 241.60 EGP)</span>
+            </div>
+                </div>
+                
+                <!-- Speed Choices -->
+                <div class="vehicle-section">
+                    <strong>🏎️ Speed Choices:</strong>
+                    <table class="speed-table">
+                        <thead><tr><th>Edge</th><th>Speed</th><th>Allowed</th></tr></thead>
+                        <tbody><tr>
+                <td>A→J1</td>
+                <td class="speed-value">42 km/h</td>
+                <td class="speed-range">[30-70]</td>
+            </tr>
+<tr>
+                <td>J1→S3</td>
+                <td class="speed-value">53 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S3→M1</td>
+                <td class="speed-value">50 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M1→J2</td>
+                <td class="speed-value">53 km/h</td>
+                <td class="speed-range">[40-90]</td>
+            </tr>
+<tr>
+                <td>J2→S6</td>
+                <td class="speed-value">55 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S6→M2</td>
+                <td class="speed-value">40 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M2→B</td>
+                <td class="speed-value">47 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        
+
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <span>Vehicle 5</span>
+                    <span class="vehicle-badge" style="background: #98D8C8">464.3 min</span>
+                </div>
+                
+                <!-- Starting Data -->
+                <div class="vehicle-section">
+                    <strong>📊 Starting Conditions:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Battery Capacity:</span>
+                        <span class="detail-value">80.0 kWh</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Initial Charge:</span>
+                        <span class="detail-value">47% (37.6 kWh)</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Departure Time:</span>
+                        <span class="detail-value">0.0 min</span>
+                    </div>
+                </div>
+                
+                <!-- Journey Summary -->
+                <div class="vehicle-section">
+                    <strong>🗺️ Journey:</strong>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Route:</span>
+                        <span class="detail-value">A → J1 → S3 → M1 → J2 → S6 → M2 → B</span>
+                    </div>
+                    <div class="vehicle-detail">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">221.00 EGP</span>
+                    </div>
+                </div>
+                
+                <!-- Charging Details -->
+                <div class="vehicle-section">
+                    <strong>⚡ Charging:</strong>
+                    <div class="vehicle-detail">
+                <span class="detail-label">S3:</span>
+                <span class="detail-value">11.1 kWh (×20.0 = 221.00 EGP)</span>
+            </div>
+                </div>
+                
+                <!-- Speed Choices -->
+                <div class="vehicle-section">
+                    <strong>🏎️ Speed Choices:</strong>
+                    <table class="speed-table">
+                        <thead><tr><th>Edge</th><th>Speed</th><th>Allowed</th></tr></thead>
+                        <tbody><tr>
+                <td>A→J1</td>
+                <td class="speed-value">40 km/h</td>
+                <td class="speed-range">[30-70]</td>
+            </tr>
+<tr>
+                <td>J1→S3</td>
+                <td class="speed-value">57 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S3→M1</td>
+                <td class="speed-value">41 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M1→J2</td>
+                <td class="speed-value">46 km/h</td>
+                <td class="speed-range">[40-90]</td>
+            </tr>
+<tr>
+                <td>J2→S6</td>
+                <td class="speed-value">54 km/h</td>
+                <td class="speed-range">[50-90]</td>
+            </tr>
+<tr>
+                <td>S6→M2</td>
+                <td class="speed-value">44 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr>
+<tr>
+                <td>M2→B</td>
+                <td class="speed-value">44 km/h</td>
+                <td class="speed-range">[40-80]</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+        
+        <!-- Stations -->
+        <div class="section">
+            <div class="section-title">⚡ Charging Stations</div>
+            <table class="info-table">
+                <thead><tr><th>Station</th><th>Plugs</th><th>Price (EGP/kWh)</th><th>Max Power (kW)</th></tr></thead>
+                <tbody><tr><td><strong>S1</strong></td><td>2</td><td>13.00</td><td>50</td></tr>
+<tr><td><strong>S2</strong></td><td>1</td><td>27.00</td><td>180</td></tr>
+<tr><td><strong>S3</strong></td><td>1</td><td>20.00</td><td>100</td></tr>
+<tr><td><strong>S4</strong></td><td>2</td><td>15.00</td><td>60</td></tr>
+<tr><td><strong>S5</strong></td><td>1</td><td>25.00</td><td>150</td></tr>
+<tr><td><strong>S6</strong></td><td>2</td><td>18.00</td><td>80</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        const socData = [
+  {
+    "label": "Vehicle 0",
+    "data": [
+      {
+        "t": 0.0,
+        "soc": 75.0,
+        "energy": 30.0
+      },
+      {
+        "t": 73.20960086097828,
+        "soc": 69.37462811487578,
+        "energy": 27.74985124595031
+      },
+      {
+        "t": 128.62280641773765,
+        "soc": 50.3289838490107,
+        "energy": 20.13159353960428
+      },
+      {
+        "t": 137.18315465675624,
+        "soc": 84.1289838490107,
+        "energy": 33.65159353960428
+      },
+      {
+        "t": 228.1494843589815,
+        "soc": 67.07494596576285,
+        "energy": 26.829978386305136
+      },
+      {
+        "t": 260.4028778880029,
+        "soc": 59.38471902805084,
+        "energy": 23.753887611220335
+      },
+      {
+        "t": 325.72172358030593,
+        "soc": 38.026721167435426,
+        "energy": 15.210688466974172
+      },
+      {
+        "t": 408.79941557809093,
+        "soc": 25.247636735246225,
+        "energy": 10.099054694098491
+      },
+      {
+        "t": 476.3537415157507,
+        "soc": 10.084125945525527,
+        "energy": 4.03365037821021
+      }
+    ],
+    "battery_kwh": 40.0
+  },
+  {
+    "label": "Vehicle 1",
+    "data": [
+      {
+        "t": 0.0,
+        "soc": 60.0,
+        "energy": 33.0
+      },
+      {
+        "t": 79.734219269103,
+        "soc": 56.55098465909091,
+        "energy": 31.1030415625
+      },
+      {
+        "t": 140.53421926910298,
+        "soc": 45.04530284090909,
+        "energy": 24.7749165625
+      },
+      {
+        "t": 144.90139763261695,
+        "soc": 45.04530284090909,
+        "energy": 24.7749165625
+      },
+      {
+        "t": 154.01892830139414,
+        "soc": 71.22712102272727,
+        "energy": 39.174916562499995
+      },
+      {
+        "t": 239.54231360206228,
+        "soc": 57.19523323863637,
+        "energy": 31.45737828125
+      },
+      {
+        "t": 279.44256297862086,
+        "soc": 53.540665056818185,
+        "energy": 29.44736578125
+      },
+      {
+        "t": 342.52186712325994,
+        "soc": 36.885035400823476,
+        "energy": 20.286769470452914
+      },
+      {
+        "t": 409.87440216961863,
+        "soc": 22.74475590203032,
+        "energy": 12.509615746116676
+      },
+      {
+        "t": 474.13143028206844,
+        "soc": 10.555922947484868,
+        "energy": 5.805757621116677
+      }
+    ],
+    "battery_kwh": 55.0
+  },
+  {
+    "label": "Vehicle 2",
+    "data": [
+      {
+        "t": 0.0,
+        "soc": 57.99999999999999,
+        "energy": 35.96
+      },
+      {
+        "t": 75.78113902161678,
+        "soc": 54.612858335217126,
+        "energy": 33.85997216783462
+      },
+      {
+        "t": 134.25288495040417,
+        "soc": 43.57719622701954,
+        "energy": 27.017861660752118
+      },
+      {
+        "t": 137.18315465675624,
+        "soc": 43.57719622701954,
+        "energy": 27.017861660752118
+      },
+      {
+        "t": 144.90139763261695,
+        "soc": 63.23848654960018,
+        "energy": 39.207861660752116
+      },
+      {
+        "t": 233.75350786757326,
+        "soc": 51.706041972884286,
+        "energy": 32.05774602318826
+      },
+      {
+        "t": 272.8761078286112,
+        "soc": 48.33392313702081,
+        "energy": 29.967032344952905
+      },
+      {
+        "t": 328.43166338416677,
+        "soc": 29.285858620891787,
+        "energy": 18.157232344952906
+      },
+      {
+        "t": 403.8967679347996,
+        "soc": 19.29404025199934,
+        "energy": 11.962304956239592
+      },
+      {
+        "t": 474.39874098042895,
+        "soc": 10.312065004289721,
+        "energy": 6.3934803026596265
+      }
+    ],
+    "battery_kwh": 62.0
+  },
+  {
+    "label": "Vehicle 3",
+    "data": [
+      {
+        "t": 0.0,
+        "soc": 52.0,
+        "energy": 39.0
+      },
+      {
+        "t": 56.587346434662635,
+        "soc": 46.97833905382352,
+        "energy": 35.233754290367635
+      },
+      {
+        "t": 114.13335689445792,
+        "soc": 37.559649039067,
+        "energy": 28.169736779300244
+      },
+      {
+        "t": 120.61970641226414,
+        "soc": 37.559649039067,
+        "energy": 28.169736779300244
+      },
+      {
+        "t": 128.268301584405,
+        "soc": 53.66631570573366,
+        "energy": 40.24973677930024
+      },
+      {
+        "t": 205.17784888007128,
+        "soc": 40.942224141692904,
+        "energy": 30.70666810626968
+      },
+      {
+        "t": 235.34877243838932,
+        "soc": 36.255045501375896,
+        "energy": 27.191284126031924
+      },
+      {
+        "t": 300.63408349148165,
+        "soc": 24.852408106072527,
+        "energy": 18.639306079554395
+      },
+      {
+        "t": 384.0817125251198,
+        "soc": 18.09719102801506,
+        "energy": 13.572893271011296
+      },
+      {
+        "t": 451.7926941281182,
+        "soc": 10.047362993182182,
+        "energy": 7.535522244886636
+      }
+    ],
+    "battery_kwh": 75.0
+  },
+  {
+    "label": "Vehicle 4",
+    "data": [
+      {
+        "t": 0.0,
+        "soc": 47.0,
+        "energy": 37.599999999999994
+      },
+      {
+        "t": 60.03700241590295,
+        "soc": 42.817660146615346,
+        "energy": 34.254128117292275
+      },
+      {
+        "t": 113.62326794768163,
+        "soc": 32.63443754899588,
+        "energy": 26.107550039196703
+      },
+      {
+        "t": 120.61970641226414,
+        "soc": 46.44693754899588,
+        "energy": 37.1575500391967
+      },
+      {
+        "t": 213.6163675532487,
+        "soc": 38.28818315864469,
+        "energy": 30.63054652691575
+      },
+      {
+        "t": 248.34250773600905,
+        "soc": 34.971171765854805,
+        "energy": 27.976937412683846
+      },
+      {
+        "t": 315.36813037303057,
+        "soc": 24.82911979838501,
+        "energy": 19.863295838708005
+      },
+      {
+        "t": 391.3862299205419,
+        "soc": 17.197713548385003,
+        "energy": 13.758170838708004
+      },
+      {
+        "t": 464.26196345732126,
+        "soc": 10.682776549046249,
+        "energy": 8.546221239237
+      }
+    ],
+    "battery_kwh": 80.0
+  }
+];
+        
+        const vehicles = [
+  {
+    "id": 0,
+    "route": [
+      "A",
+      "J1",
+      "S3",
+      "M1",
+      "J2",
+      "S6",
+      "M2",
+      "B"
+    ],
+    "route_text": "A \u2192 J1 \u2192 S3 \u2192 M1 \u2192 J2 \u2192 S6 \u2192 M2 \u2192 B",
+    "completion_time": 476.3537415157507,
+    "total_cost": 270.4,
+    "charging_time": 8.560348239018595,
+    "queue_time": 0.0,
+    "charging_stations": [
+      "S3"
+    ],
+    "charging_amounts": {
+      "S3": 13.52
+    },
+    "speeds": {
+      "A\u2192J1": 32.782585504836874,
+      "J1\u2192S3": 54.86056923536303,
+      "S3\u2192M1": 42.21342130181672,
+      "M1\u2192J2": 49.607183149901175,
+      "J2\u2192S6": 55.11426238238331,
+      "S6\u2192M2": 40.444070113184935,
+      "M2\u2192B": 47.369283248463034
+    },
+    "arrival_times": {
+      "A": 0.0,
+      "J1": 73.20960086097828,
+      "S3": 128.62280641773765,
+      "M1": 228.1494843589815,
+      "J2": 260.4028778880029,
+      "S6": 325.72172358030593,
+      "M2": 408.79941557809093,
+      "B": 476.3537415157507
+    },
+    "departure_times": {
+      "A": 0.0,
+      "J1": 73.20960086097828,
+      "S3": 137.18315465675624,
+      "M1": 228.1494843589815,
+      "J2": 260.4028778880029,
+      "S6": 325.72172358030593,
+      "M2": 408.79941557809093,
+      "B": 476.3537415157507
+    }
+  },
+  {
+    "id": 1,
+    "route": [
+      "A",
+      "J1",
+      "S3",
+      "M1",
+      "J2",
+      "S6",
+      "M2",
+      "B"
+    ],
+    "route_text": "A \u2192 J1 \u2192 S3 \u2192 M1 \u2192 J2 \u2192 S6 \u2192 M2 \u2192 B",
+    "completion_time": 474.13143028206844,
+    "total_cost": 288.0,
+    "charging_time": 9.117530668777192,
+    "queue_time": 4.367178363513972,
+    "charging_stations": [
+      "S3"
+    ],
+    "charging_amounts": {
+      "S3": 14.399999999999999
+    },
+    "speeds": {
+      "A\u2192J1": 30.1,
+      "J1\u2192S3": 50.0,
+      "S3\u2192M1": 44.9,
+      "M1\u2192J2": 40.10000000000001,
+      "J2\u2192S6": 57.07101637876822,
+      "S6\u2192M2": 49.88676369326433,
+      "M2\u2192B": 49.8
+    },
+    "arrival_times": {
+      "A": 0.0,
+      "J1": 79.734219269103,
+      "S3": 140.53421926910298,
+      "M1": 239.54231360206228,
+      "J2": 279.44256297862086,
+      "S6": 342.52186712325994,
+      "M2": 409.87440216961863,
+      "B": 474.13143028206844
+    },
+    "departure_times": {
+      "A": 0.0,
+      "J1": 79.734219269103,
+      "S3": 154.01892830139414,
+      "M1": 239.54231360206228,
+      "J2": 279.44256297862086,
+      "S6": 342.52186712325994,
+      "M2": 409.87440216961863,
+      "B": 474.13143028206844
+    }
+  },
+  {
+    "id": 2,
+    "route": [
+      "A",
+      "J1",
+      "S3",
+      "M1",
+      "J2",
+      "S6",
+      "M2",
+      "B"
+    ],
+    "route_text": "A \u2192 J1 \u2192 S3 \u2192 M1 \u2192 J2 \u2192 S6 \u2192 M2 \u2192 B",
+    "completion_time": 474.39874098042895,
+    "total_cost": 243.79999999999998,
+    "charging_time": 7.718242975860704,
+    "queue_time": 2.930269706352078,
+    "charging_stations": [
+      "S3"
+    ],
+    "charging_amounts": {
+      "S3": 12.19
+    },
+    "speeds": {
+      "A\u2192J1": 31.670149472356087,
+      "J1\u2192S3": 51.990922311476886,
+      "S3\u2192M1": 43.21788182459241,
+      "M1\u2192J2": 40.89707743333604,
+      "J2\u2192S6": 64.8,
+      "S6\u2192M2": 44.523889816459885,
+      "M2\u2192B": 45.3888006500036
+    },
+    "arrival_times": {
+      "A": 0.0,
+      "J1": 75.78113902161678,
+      "S3": 134.25288495040417,
+      "M1": 233.75350786757326,
+      "J2": 272.8761078286112,
+      "S6": 328.43166338416677,
+      "M2": 403.8967679347996,
+      "B": 474.39874098042895
+    },
+    "departure_times": {
+      "A": 0.0,
+      "J1": 75.78113902161678,
+      "S3": 144.90139763261695,
+      "M1": 233.75350786757326,
+      "J2": 272.8761078286112,
+      "S6": 328.43166338416677,
+      "M2": 403.8967679347996,
+      "B": 474.39874098042895
+    }
+  },
+  {
+    "id": 3,
+    "route": [
+      "A",
+      "J1",
+      "S3",
+      "M1",
+      "J2",
+      "S6",
+      "M2",
+      "B"
+    ],
+    "route_text": "A \u2192 J1 \u2192 S3 \u2192 M1 \u2192 J2 \u2192 S6 \u2192 M2 \u2192 B",
+    "completion_time": 451.7926941281182,
+    "total_cost": 241.6,
+    "charging_time": 7.6485951721408725,
+    "queue_time": 6.486349517806218,
+    "charging_stations": [
+      "S3"
+    ],
+    "charging_amounts": {
+      "S3": 12.08
+    },
+    "speeds": {
+      "A\u2192J1": 42.41230860279177,
+      "J1\u2192S3": 52.827293772587524,
+      "S3\u2192M1": 49.928781731580656,
+      "M1\u2192J2": 53.03119067294459,
+      "J2\u2192S6": 55.14257253170396,
+      "S6\u2192M2": 40.264774912245464,
+      "M2\u2192B": 47.259689997734384
+    },
+    "arrival_times": {
+      "A": 0.0,
+      "J1": 56.587346434662635,
+      "S3": 114.13335689445792,
+      "M1": 205.17784888007128,
+      "J2": 235.34877243838932,
+      "S6": 300.63408349148165,
+      "M2": 384.0817125251198,
+      "B": 451.7926941281182
+    },
+    "departure_times": {
+      "A": 0.0,
+      "J1": 56.587346434662635,
+      "S3": 128.268301584405,
+      "M1": 205.17784888007128,
+      "J2": 235.34877243838932,
+      "S6": 300.63408349148165,
+      "M2": 384.0817125251198,
+      "B": 451.7926941281182
+    }
+  },
+  {
+    "id": 4,
+    "route": [
+      "A",
+      "J1",
+      "S3",
+      "M1",
+      "J2",
+      "S6",
+      "M2",
+      "B"
+    ],
+    "route_text": "A \u2192 J1 \u2192 S3 \u2192 M1 \u2192 J2 \u2192 S6 \u2192 M2 \u2192 B",
+    "completion_time": 464.26196345732126,
+    "total_cost": 221.0,
+    "charging_time": 6.996438464582511,
+    "queue_time": 0.0,
+    "charging_stations": [
+      "S3"
+    ],
+    "charging_amounts": {
+      "S3": 11.05
+    },
+    "speeds": {
+      "A\u2192J1": 39.975346926452715,
+      "J1\u2192S3": 56.730954654736394,
+      "S3\u2192M1": 41.291805027048156,
+      "M1\u2192J2": 46.0748010455338,
+      "J2\u2192S6": 53.710802799936175,
+      "S6\u2192M2": 44.2,
+      "M2\u2192B": 43.91036418707202
+    },
+    "arrival_times": {
+      "A": 0.0,
+      "J1": 60.03700241590295,
+      "S3": 113.62326794768163,
+      "M1": 213.6163675532487,
+      "J2": 248.34250773600905,
+      "S6": 315.36813037303057,
+      "M2": 391.3862299205419,
+      "B": 464.26196345732126
+    },
+    "departure_times": {
+      "A": 0.0,
+      "J1": 60.03700241590295,
+      "S3": 120.61970641226414,
+      "M1": 213.6163675532487,
+      "J2": 248.34250773600905,
+      "S6": 315.36813037303057,
+      "M2": 391.3862299205419,
+      "B": 464.26196345732126
+    }
+  }
+];
+        const networkPos = {
+  "A": {
+    "x": 40,
+    "y": 200
+  },
+  "J1": {
+    "x": 120,
+    "y": 200
+  },
+  "S1": {
+    "x": 220,
+    "y": 80
+  },
+  "S2": {
+    "x": 320,
+    "y": 80
+  },
+  "S3": {
+    "x": 270,
+    "y": 320
+  },
+  "M1": {
+    "x": 400,
+    "y": 200
+  },
+  "J2": {
+    "x": 480,
+    "y": 200
+  },
+  "S4": {
+    "x": 580,
+    "y": 80
+  },
+  "S5": {
+    "x": 680,
+    "y": 80
+  },
+  "S6": {
+    "x": 630,
+    "y": 320
+  },
+  "M2": {
+    "x": 780,
+    "y": 200
+  },
+  "B": {
+    "x": 860,
+    "y": 200
+  }
+};
+        const edges = [
+  {
+    "from": "A",
+    "to": "J1",
+    "label": "A\u2192J1",
+    "distance_km": 40.0,
+    "speed_min": 30.0,
+    "speed_max": 70.0,
+    "base_time": 30.0,
+    "base_energy": 13.4
+  },
+  {
+    "from": "J1",
+    "to": "S1",
+    "label": "J1\u2192S1",
+    "distance_km": 60.0,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 45.0,
+    "base_energy": 18.4
+  },
+  {
+    "from": "S1",
+    "to": "S2",
+    "label": "S1\u2192S2",
+    "distance_km": 46.7,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 35.0,
+    "base_energy": 13.9
+  },
+  {
+    "from": "S2",
+    "to": "M1",
+    "label": "S2\u2192M1",
+    "distance_km": 42.7,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 32.0,
+    "base_energy": 13.9
+  },
+  {
+    "from": "J1",
+    "to": "S3",
+    "label": "J1\u2192S3",
+    "distance_km": 50.7,
+    "speed_min": 50.0,
+    "speed_max": 90.0,
+    "base_time": 38.0,
+    "base_energy": 16.2
+  },
+  {
+    "from": "S3",
+    "to": "M1",
+    "label": "S3\u2192M1",
+    "distance_km": 64.0,
+    "speed_min": 40.0,
+    "speed_max": 80.0,
+    "base_time": 48.0,
+    "base_energy": 24.5
+  },
+  {
+    "from": "M1",
+    "to": "J2",
+    "label": "M1\u2192J2",
+    "distance_km": 26.7,
+    "speed_min": 40.0,
+    "speed_max": 90.0,
+    "base_time": 20.0,
+    "base_energy": 8.0
+  },
+  {
+    "from": "J2",
+    "to": "S4",
+    "label": "J2\u2192S4",
+    "distance_km": 53.3,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 40.0,
+    "base_energy": 16.0
+  },
+  {
+    "from": "S4",
+    "to": "S5",
+    "label": "S4\u2192S5",
+    "distance_km": 40.0,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 30.0,
+    "base_energy": 12.0
+  },
+  {
+    "from": "S5",
+    "to": "M2",
+    "label": "S5\u2192M2",
+    "distance_km": 46.7,
+    "speed_min": 60.0,
+    "speed_max": 120.0,
+    "base_time": 35.0,
+    "base_energy": 14.0
+  },
+  {
+    "from": "J2",
+    "to": "S6",
+    "label": "J2\u2192S6",
+    "distance_km": 60.0,
+    "speed_min": 50.0,
+    "speed_max": 90.0,
+    "base_time": 45.0,
+    "base_energy": 18.0
+  },
+  {
+    "from": "S6",
+    "to": "M2",
+    "label": "S6\u2192M2",
+    "distance_km": 56.0,
+    "speed_min": 40.0,
+    "speed_max": 80.0,
+    "base_time": 42.0,
+    "base_energy": 20.0
+  },
+  {
+    "from": "M2",
+    "to": "B",
+    "label": "M2\u2192B",
+    "distance_km": 53.3,
+    "speed_min": 40.0,
+    "speed_max": 80.0,
+    "base_time": 40.0,
+    "base_energy": 17.3
+  }
+];
+        const maxTime = 476.3537415157507;
+        const stationNodes = [
+  "S1",
+  "S2",
+  "S3",
+  "S4",
+  "S5",
+  "S6"
+];
+        
+        const networkCanvas = document.getElementById('networkCanvas');
+        const networkCtx = networkCanvas.getContext('2d');
+        const timelineCanvas = document.getElementById('timelineCanvas');
+        const timelineCtx = timelineCanvas.getContext('2d');
+        
+        let currentTime = 0;
+        let isPlaying = false;
+        let animationSpeed = 1.0;
+        let animationFrame = null;
+        
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+        
+        // Timeline constants
+        const TIMELINE_MARGIN = 50;
+        const TIMELINE_ROW_HEIGHT = 35;
+        const TIMELINE_PADDING = 20;
+        
+        // Draw static network
+        function drawNetwork() {
+            networkCtx.clearRect(0, 0, networkCanvas.width, networkCanvas.height);
+            
+            // Draw edges
+            networkCtx.strokeStyle = '#ccc';
+            networkCtx.lineWidth = 3;
+            edges.forEach(edge => {
+                const from = networkPos[edge.from];
+                const to = networkPos[edge.to];
+                networkCtx.beginPath();
+                networkCtx.moveTo(from.x, from.y);
+                networkCtx.lineTo(to.x, to.y);
+                networkCtx.stroke();
+                
+                // Edge label
+                const midX = (from.x + to.x) / 2;
+                const midY = (from.y + to.y) / 2;
+                networkCtx.fillStyle = '#666';
+                networkCtx.font = '10px Arial';
+                networkCtx.fillText(`${edge.speed_min}-${edge.speed_max} km/h`, midX - 30, midY - 5);
+            });
+            
+            // Draw nodes
+            Object.entries(networkPos).forEach(([node, pos]) => {
+                const isStation = stationNodes.includes(node);
+                networkCtx.fillStyle = isStation ? '#b7e4c7' : '#cde4ff';
+                networkCtx.beginPath();
+                networkCtx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+                networkCtx.fill();
+                networkCtx.strokeStyle = '#333';
+                networkCtx.lineWidth = 2;
+                networkCtx.stroke();
+                
+                networkCtx.fillStyle = '#000';
+                networkCtx.font = 'bold 14px Arial';
+                networkCtx.textAlign = 'center';
+                networkCtx.textBaseline = 'middle';
+                networkCtx.fillText(node, pos.x, pos.y);
+            });
+        }
+        
+        // Draw timeline
+        function drawTimeline() {
+            timelineCtx.clearRect(0, 0, timelineCanvas.width, timelineCanvas.height);
+            
+            const chartWidth = timelineCanvas.width - 2 * TIMELINE_MARGIN;
+            const chartStart = TIMELINE_MARGIN;
+            
+            // Draw each vehicle's timeline
+            vehicles.forEach((vehicle, idx) => {
+                const y = TIMELINE_PADDING + idx * TIMELINE_ROW_HEIGHT;
+                const color = colors[idx % colors.length];
+                
+                // Vehicle label
+                timelineCtx.fillStyle = '#333';
+                timelineCtx.font = 'bold 11px Arial';
+                timelineCtx.textAlign = 'right';
+                timelineCtx.textBaseline = 'middle';
+                timelineCtx.fillText(`V${idx + 1}`, chartStart - 10, y + 15);
+                
+                // Draw timeline segments
+                let prevTime = 0;
+                vehicle.route.forEach((node, nodeIdx) => {
+                    if (node in vehicle.arrival_times) {
+                        const arrival = vehicle.arrival_times[node];
+                        const departure = vehicle.departure_times[node];
+                        
+                        // Travel segment
+                        if (prevTime < arrival) {
+                            const startX = chartStart + (prevTime / maxTime) * chartWidth;
+                            const width = ((arrival - prevTime) / maxTime) * chartWidth;
+                            timelineCtx.fillStyle = '#4CAF50';
+                            timelineCtx.fillRect(startX, y, width, 30);
+                            timelineCtx.strokeStyle = '#fff';
+                            timelineCtx.lineWidth = 1;
+                            timelineCtx.strokeRect(startX, y, width, 30);
+                        }
+                        
+                        // Charging segment
+                        if (vehicle.charging_stations.includes(node)) {
+                            const startX = chartStart + (arrival / maxTime) * chartWidth;
+                            const width = ((departure - arrival) / maxTime) * chartWidth;
+                            timelineCtx.fillStyle = '#EF5350';
+                            timelineCtx.fillRect(startX, y, width, 30);
+                            timelineCtx.strokeStyle = '#fff';
+                            timelineCtx.lineWidth = 1;
+                            timelineCtx.strokeRect(startX, y, width, 30);
+                            
+                            // Station label on charging segment
+                            if (width > 20) {
+                                timelineCtx.fillStyle = '#fff';
+                                timelineCtx.font = 'bold 10px Arial';
+                                timelineCtx.textAlign = 'center';
+                                timelineCtx.fillText(node, startX + width/2, y + 15);
+                            }
+                        }
+                        
+                        prevTime = departure;
+                    }
+                });
+            });
+            
+            // Draw current time indicator
+            const currentX = chartStart + (currentTime / maxTime) * chartWidth;
+            timelineCtx.strokeStyle = '#666';
+            timelineCtx.lineWidth = 2;
+            timelineCtx.beginPath();
+            timelineCtx.moveTo(currentX, 0);
+            timelineCtx.lineTo(currentX, timelineCanvas.height);
+            timelineCtx.stroke();
+            
+            // Time markers
+            timelineCtx.fillStyle = '#999';
+            timelineCtx.font = '10px Arial';
+            timelineCtx.textAlign = 'center';
+            for (let i = 0; i <= 5; i++) {
+                const time = (i / 5) * maxTime;
+                const x = chartStart + (i / 5) * chartWidth;
+                timelineCtx.fillText(`${time.toFixed(0)}m`, x, timelineCanvas.height - 5);
+            }
+        }
+        
+        // Get vehicle position at current time
+        function getVehiclePosition(vehicle) {
+            const route = vehicle.route;
+            
+            for (let i = 0; i < route.length - 1; i++) {
+                const currentNode = route[i];
+                const nextNode = route[i + 1];
+                
+                const arrivalNext = vehicle.arrival_times[nextNode] || Infinity;
+                const departCurrent = vehicle.departure_times[currentNode] || 0;
+                
+                // At station
+                if (currentTime >= vehicle.arrival_times[currentNode] && currentTime < departCurrent) {
+                    return networkPos[currentNode];
+                }
+                
+                // Traveling
+                if (currentTime >= departCurrent && currentTime < arrivalNext) {
+                    const progress = (currentTime - departCurrent) / (arrivalNext - departCurrent);
+                    const from = networkPos[currentNode];
+                    const to = networkPos[nextNode];
+                    return {
+                        x: from.x + progress * (to.x - from.x),
+                        y: from.y + progress * (to.y - from.y)
+                    };
+                }
+            }
+            
+            return networkPos['B']; // Completed
+        }
+        
+        // Draw vehicles
+        function drawVehicles() {
+            vehicles.forEach((vehicle, idx) => {
+                if (currentTime > vehicle.completion_time) return;
+                
+                const pos = getVehiclePosition(vehicle);
+                const color = colors[idx % colors.length];
+                
+                networkCtx.fillStyle = color;
+                networkCtx.beginPath();
+                networkCtx.arc(pos.x, pos.y, 12, 0, Math.PI * 2);
+                networkCtx.fill();
+                networkCtx.strokeStyle = '#000';
+                networkCtx.lineWidth = 2;
+                networkCtx.stroke();
+                
+                networkCtx.fillStyle = '#fff';
+                networkCtx.font = 'bold 10px Arial';
+                networkCtx.textAlign = 'center';
+                networkCtx.textBaseline = 'middle';
+                networkCtx.fillText(`V${idx + 1}`, pos.x, pos.y);
+            });
+        }
+        
+        // Update everything
+        function updateDisplay() {
+            drawNetwork();
+            drawVehicles();
+            drawTimeline();
+            document.getElementById('timeDisplay').textContent = `Time: ${currentTime.toFixed(1)} min / ${maxTime.toFixed(1)} min`;
+        }
+        
+        // Animation loop
+        function animate() {
+            if (!isPlaying) return;
+            
+            currentTime += 0.1 * animationSpeed;
+            if (currentTime > maxTime) {
+                currentTime = 0;
+            }
+            
+            updateDisplay();
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Timeline click handler (scrubbing)
+        timelineCanvas.addEventListener('click', (e) => {
+            const rect = timelineCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const chartWidth = timelineCanvas.width - 2 * TIMELINE_MARGIN;
+            const chartStart = TIMELINE_MARGIN;
+            
+            if (x >= chartStart && x <= chartStart + chartWidth) {
+                const clickedTime = ((x - chartStart) / chartWidth) * maxTime;
+                currentTime = Math.max(0, Math.min(maxTime, clickedTime));
+                updateDisplay();
+            }
+        });
+        
+        // Controls
+        document.getElementById('playBtn').onclick = () => {
+            isPlaying = true;
+            animate();
+        };
+        
+        document.getElementById('pauseBtn').onclick = () => {
+            isPlaying = false;
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+        };
+        
+        document.getElementById('resetBtn').onclick = () => {
+            currentTime = 0;
+            isPlaying = false;
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            updateDisplay();
+        };
+        
+        document.getElementById('speedSlider').oninput = (e) => {
+            animationSpeed = parseFloat(e.target.value);
+        };
+        
+        // Create vehicle legend
+        const legend = document.getElementById('vehicleLegend');
+        vehicles.forEach((v, idx) => {
+            const div = document.createElement('div');
+            div.className = 'legend-vehicle';
+            div.innerHTML = `
+                <div class="legend-vehicle-color" style="background: ${colors[idx % colors.length]}"></div>
+                <span>Vehicle ${idx + 1}: ${v.route_text}</span>
+            `;
+            legend.appendChild(div);
+        });
+        
+        // Initial draw
+        updateDisplay();
+    
+        
+        // Render SOC Chart
+        const ctx = document.getElementById('socChart').getContext('2d');
+        const datasets = socData.map((v, i) => ({
+            label: v.label,
+            data: v.data.map(p => ({x: p.t, y: p.soc, energy: p.energy})),
+            borderColor: colors[i % colors.length],
+            backgroundColor: colors[i % colors.length],
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            tension: 0.1,
+            showLine: true
+        }));
+        
+        new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Time (minutes)' }
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        title: { display: true, text: 'State of Charge (%)' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const point = context.raw;
+                                return context.dataset.label + ': ' + 
+                                       context.parsed.y.toFixed(1) + '% (' + 
+                                       point.energy.toFixed(1) + ' kWh) at ' + 
+                                       context.parsed.x.toFixed(1) + ' min';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Render Energy Chart
+        const ctxEnergy = document.getElementById('energyChart').getContext('2d');
+        const datasetsEnergy = socData.map((v, i) => ({
+            label: v.label,
+            data: v.data.map(p => ({x: p.t, y: p.energy, soc: p.soc})),
+            borderColor: colors[i % colors.length],
+            backgroundColor: colors[i % colors.length],
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            tension: 0.1,
+            showLine: true
+        }));
+        
+        new Chart(ctxEnergy, {
+            type: 'scatter',
+            data: { datasets: datasetsEnergy },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Time (minutes)' }
+                    },
+                    y: {
+                        min: 0,
+                        // max: auto (depends on battery size)
+                        title: { display: true, text: 'Energy Level (kWh)' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const point = context.raw;
+                                return context.dataset.label + ': ' + 
+                                       context.parsed.y.toFixed(1) + ' kWh (' + 
+                                       point.soc.toFixed(1) + '%) at ' + 
+                                       context.parsed.x.toFixed(1) + ' min';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+    </script>
+</body>
+</html>
