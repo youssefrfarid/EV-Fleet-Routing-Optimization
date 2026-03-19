@@ -291,6 +291,12 @@ M → B
 
 The full project report is available in [`docs/EV_Fleet_Routing_Optimization.pdf`](docs/EV_Fleet_Routing_Optimization.pdf).
 
+## Acknowledgments
+
+This project was developed as part of the Mechatronics Engineering program at the German University in Cairo (GUC).
+
+---
+
 ## References
 
 1. S. Pelletier, O. Jabali, and G. Laporte, "Goods distribution with electric vehicles: Review and research perspectives," *Transportation Science*, 50(1), 2016.
